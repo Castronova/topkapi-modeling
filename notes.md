@@ -42,17 +42,25 @@
 
 * list all modified files
 
-`git status`  
-
-`git status -uno`
+   `git status`  
+  
+   `git status -uno`
 
 * stage all modified files 
 
-`git commit -am "a message explaining the changes that I've made"
+   `git commit -am "a message explaining the changes that I've made"
 
 * push changed files to server
 
-`git push`
+   `git push`
+
+### Update local files with those on server  
+
+    `git pull`
+
+### Revert local file to the state on server  
+
+    `git checkout my-file-name`
 
 
 
