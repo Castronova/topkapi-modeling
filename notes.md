@@ -56,11 +56,11 @@
 
 ### Update local files with those on server  
 
-    `git pull`
+   `git pull`
 
 ### Revert local file to the state on server  
 
-    `git checkout my-file-name`
+   `git checkout my-file-name`
 
 
 
