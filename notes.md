@@ -48,7 +48,7 @@
 
 * stage all modified files 
 
-   `git commit -am "a message explaining the changes that I've made"
+   `git commit -am "a message explaining the changes that I've made"`
 
 * push changed files to server
 
