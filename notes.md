@@ -23,18 +23,36 @@
 * create new file in directory
 
 * view the status of your repository
+
    `git status`
 
 * add the file to git tracking
+
    `git add my-file-name`
 
 * stage the file for commit   
+
    `git commit -m "this is my commit message.  Describe what changes have been made to the file"`
 
-* push the file(s) to the server
-   `git push`
+* push the file(s) to the server  
+   
+   `git push origin master`
 
+### Modified files
 
+* list all modified files
+
+`git status`  
+
+`git status -uno`
+
+* stage all modified files 
+
+`git commit -am "a message explaining the changes that I've made"
+
+* push changed files to server
+
+`git push`
 
 
 
