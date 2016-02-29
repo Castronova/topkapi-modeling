@@ -7,7 +7,7 @@ import inspect
 # execpath = os.path.dirname(os.path.abspath(filename))
 # drive_letter  = execpath[0]
 
-execpath = r"C:\Users\Prasanna\Google Drive\RESEARCH\SharedWithDrCastronova\2016\PyCharmWorkspace\FEB\NL_C03_2"
+execpath = os.getcwd()
 
 os.chdir(execpath +'\\run_the_model\\')
 

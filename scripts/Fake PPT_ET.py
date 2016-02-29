@@ -2,7 +2,7 @@
 
 ##### my code #####
 import os, h5py , numpy
-os.chdir(r'C:\Users\Prasanna\Google Drive\SharedWithDrCastronova\2016\PyCharmWorkspace\FEB\NL_C03_2\run_the_model\forcing_variables')
+os.chdir(r'C:\Users\Prasanna\Google Drive\RESEARCH\SharedWithDrCastronova\2016\PyCharmWorkspace\FEB\NL_C03_2\run_the_model\forcing_variables')
 
 time_step = 170
 no_of_cell = 1885
