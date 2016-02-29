@@ -6,7 +6,8 @@ import inspect
 
 execpath = os.getcwd()
 
-os.chdir(execpath +'\\run_the_model\\')
+path = os.path.join(execpath,'run_the_model')
+os.chdir(path)
 
 pytopkapi.run('TOPKAPI.ini')
 
