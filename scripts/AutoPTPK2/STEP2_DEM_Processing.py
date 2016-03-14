@@ -10,6 +10,8 @@ Full path may not be required when we hae assigned workspace
 Default Threshold of flow accumulation
 Clipping / extracting by a mask
 Soil depth is in string
+
+Snapped gage/outlet needs to be created as a seperated point shapefile
 '''
 
 arcpy.env.overwriteOutput = True
@@ -37,7 +39,7 @@ fac = 'fac'
 strlnk = 'strlnk'
 str = 'str'
 strc = 'strc'
-drp = 'drp'
+slope = 'slope'
 Catchment = 'Catchment'
 DrainageLine_shp = 'DrainageLine'
 CatchPoly_shp =  'CatchPoly'
@@ -47,7 +49,7 @@ Outlet = "Outlet"
 mask = "mask"
 
 # arcpy.gp.Fill_sa(DEM, fill, "")
-# arcpy.gp.FlowDirection_sa(fill, fdr, "NORMAL", drp)
+# arcpy.gp.FlowDirection_sa(fill, fdr, "NORMAL", slope)
 # arcpy.gp.FlowAccumulation_sa(fdr, fac, "", "FLOAT")
 # arcpy.gp.RasterCalculator_sa('"fac" > ' + threshold, str)
 # arcpy.gp.ExtractByMask_sa(str, Basin, strc)
@@ -62,13 +64,16 @@ mask = "mask"
 #-------------------------dtarb code---------------------------------
 outFill = Fill(DEM) ;                                   outFill.save("fel")  ;                   print "Fill Done"        #the result is in memory
 outFlowDirection = FlowDirection("fel") ;               outFlowDirection.save(fdr)
-outFlowAccumulation = FlowAccumulation(fdr);            outFlowAccumulation.save(fac) ;         print "fac"
-arcpy.gp.FlowDirection_sa(fill, fdr, "NORMAL", drp)
-outSnapPour = SnapPourPoint(gage, fac, 100,"OBJECTID"); outSnapPour.save(Outlet) ;              print "snappoint done"   #snap the gagepoint from gage to fac, within a distance of 50m #saves it as a raster
+outFlowAccumulation = FlowAccumulation(fdr);            outFlowAccumulation.save(fac) ;           print "fac"
+arcpy.gp.FlowDirection_sa(fill, fdr, "NORMAL", slope)
+outSnapPour = SnapPourPoint(gage, fac, 100,"OBJECTID"); outSnapPour.save(Outlet) ;                 print "snappoint done"   #snap the gagepoint from gage to fac, within a distance of 50m #saves it as a raster
 outWatershed = Watershed(fdr, Outlet);                  outWatershed.save(mask)
 StreamRaster = (Raster(fac) >= float(threshold)) & (Raster(mask) >= 0) ; StreamRaster.save(str);   print "StreamNet done"  #to define stream only upstream of the outlet
 outStreamLink = StreamLink(str,fdr) ;                   outStreamLink.save(strlnk)
-Catchment = Watershed(fdr, strlnk);                     Catchment.save("catchment")
+Catchment = Watershed(fdr, strlnk);                     Catchment.save("catchment")         #we do not need catchment though, mask is good for us
+
+
+
 
 
 StreamToFeature(strlnk, fdr, "Streamnet","NO_SIMPLIFY")                                                               #stream defined
@@ -83,7 +88,7 @@ arcpy.AddMessage("********** Fdr, Fac, Stream processing complete **********")
 #clip to the mask--------------------------------------------------------
 arcpy.gp.ExtractByMask_sa(str, mask, str+"_c")
 arcpy.gp.ExtractByMask_sa(fdr, mask, fdr+"_c")
-arcpy.gp.ExtractByMask_sa(drp, mask, drp+"_c")
+arcpy.gp.ExtractByMask_sa(slope, mask, slope+"_c")
 arcpy.gp.ExtractByMask_sa(DEM, mask, DEM+"_c")
 arcpy.gp.ExtractByMask_sa(land_use, mask, land_use+"_c")
 
@@ -91,9 +96,10 @@ arcpy.gp.ExtractByMask_sa(land_use, mask, land_use+"_c")
 land_use = land_use +"_c"
 str = str +"_c"
 fdr = fdr +"_c"
-drp = drp +"_c"
+slope = slope +"_c"
 DEM = DEM +"_c"
-SD = "SD"
+SD = "SD_c"    #_c for consistency in naming
+
 #strahler for mannings for channel
 arcpy.gp.StreamOrder_sa(str, fdr, STRAHLER, "STRAHLER")  # the last parameter, Strahler string, is actually a method of ordering stream. NOT A NAME
 arcpy.AddMessage("********** Strahler stream order processing complete **********")
@@ -114,24 +120,30 @@ arcpy.AddMessage("********** Strahler order raster reclassification to obtain Ma
 arcpy.gp.RasterCalculator_sa(""""nx10000_Overl" /10000.0""", outDir+"/n_Overland")
 arcpy.gp.RasterCalculator_sa(""""nx10000_Chan" /10000.0""", outDir+"/n_Channel")
 
-
 arcpy.AddMessage("########## DEM processing complete ##########")
 
-soilDepth = 0.7
+
 
 #REclassify to change no data to -9999
 arcpy.gp.Reclassify_sa(fdr, "Value", "1 1;2 2;4 4;8 8;16 16;32 32;64 64;128 128;NODATA -9999", fdr+"_r", "DATA")
 arcpy.gp.Reclassify_sa(str, "Value", "0 0;1 1;NODATA -9999", str + "_r", "DATA")
 arcpy.gp.Reclassify_sa(mask, "Value", "1 1;NODATA -9999", mask + "_r", "DATA")
-arcpy.gp.RasterCalculator_sa(""""mask_c"+0.7""", SD)                                                    #creating soil depth raster, len = 1.5
+arcpy.gp.RasterCalculator_sa(""""mask_c"+.5""", SD)                                                    #creating soil depth raster, len = 1.5
 arcpy.AddMessage("########## Assigning -9999 to NoData, mask and Soil depth creation  completed ##########")
 
+
+#after reclassiifying
+str = str +"_r"
+fdr = fdr +"_r"
+slope = slope +"_r"
+DEM = DEM +"_r"
+mask = mask + "_r"
 
 # Add n_Channel and n_Overland to layer and then to map document
 mxd = arcpy.mapping.MapDocument("CURRENT")                      # get the map document
 df = arcpy.mapping.ListDataFrames(mxd,"*")[0]                   # first data-frame in the document
 
-fdr_layer = arcpy.mapping.Layer(outDir+"/"+ mask+"_r")                 # create a new layer
+fdr_layer = arcpy.mapping.Layer(outDir+"/"+ mask)                 # create a new layer
 arcpy.mapping.AddLayer(df, fdr_layer ,"TOP")
 
 fdr_layer = arcpy.mapping.Layer(outDir+"/"+ DEM )                 # create a new layer
@@ -143,13 +155,13 @@ arcpy.mapping.AddLayer(df, n_Channel_layer ,"TOP")
 n_Overland_layer = arcpy.mapping.Layer(outDir+"/n_Overland")    # create a new layer
 arcpy.mapping.AddLayer(df, n_Overland_layer,"TOP")
 
-fdr_layer = arcpy.mapping.Layer(outDir+"/"+fdr+"_r")                 # create a new layer
+fdr_layer = arcpy.mapping.Layer(outDir+"/"+fdr)                 # create a new layer
 arcpy.mapping.AddLayer(df, fdr_layer ,"TOP")
 
-drp_layer = arcpy.mapping.Layer(outDir+"/"+ drp+"_r")                # create a new layer
-arcpy.mapping.AddLayer(df, drp_layer ,"TOP")
+slope_layer = arcpy.mapping.Layer(outDir+"/"+ slope)                # create a new layer
+arcpy.mapping.AddLayer(df, slope_layer ,"TOP")
 
-layer = arcpy.mapping.Layer(outDir+"/"+ mask+"_r")                # create a new layer
+layer = arcpy.mapping.Layer(outDir+"/"+ mask)                # create a new layer
 arcpy.mapping.AddLayer(df, layer ,"TOP")
 
 layer = arcpy.mapping.Layer(outDir+"/"+ SD)                # create a new layer
@@ -207,7 +219,7 @@ arcpy.mapping.AddLayer(df, layer ,"TOP")
 # strlnk = 'strlnk'
 # str = 'str'
 # strc = 'strc'
-# drp = 'drp'
+# slope = 'slope'
 # Catchment = 'Catchment'
 # DrainageLine_shp = 'DrainageLine'
 # CatchPoly_shp =  'CatchPoly'
@@ -215,7 +227,7 @@ arcpy.mapping.AddLayer(df, layer ,"TOP")
 # STRAHLER = "STRAHLER"
 #
 # arcpy.gp.Fill_sa(DEM, fill, "")
-# arcpy.gp.FlowDirection_sa(fill, fdr, "NORMAL", drp)
+# arcpy.gp.FlowDirection_sa(fill, fdr, "NORMAL", slope)
 # arcpy.gp.FlowAccumulation_sa(fdr, fac, "", "FLOAT")
 # arcpy.gp.RasterCalculator_sa('"fac" > ' + threshold, str)
 # arcpy.gp.ExtractByMask_sa(str, Basin, strc)
@@ -265,8 +277,8 @@ arcpy.mapping.AddLayer(df, layer ,"TOP")
 # fdr_layer = arcpy.mapping.Layer(outDir+"/"+fdr)                 # create a new layer
 # arcpy.mapping.AddLayer(df, fdr_layer ,"TOP")
 #
-# drp_layer = arcpy.mapping.Layer(outDir+"/"+ drp)                # create a new layer
-# arcpy.mapping.AddLayer(df, drp_layer ,"TOP")
+# slope_layer = arcpy.mapping.Layer(outDir+"/"+ slope)                # create a new layer
+# arcpy.mapping.AddLayer(df, slope_layer ,"TOP")
 #
 #
 # #at laaast

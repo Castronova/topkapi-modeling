@@ -2,26 +2,29 @@
 
 ##### my code #####
 import os, h5py , numpy
-os.chdir(r'C:\Users\Prasanna\Google Drive\RESEARCH\SharedWithDrCastronova\2016\PyCharmWorkspace\FEB\NL_C03_2\run_the_model\forcing_variables')
 
-time_step = 170
+path = "../simulations/TEST SIMULAITON2/run_the_model/forcing_variables"
+rainfall_outputFile = os.path.join(path, "rainfields_sampleWatershed.h5")
+ET_outputFile = os.path.join(path, "ET_sampleWatershed.h5")
+
+time_step = 161
 no_of_cell = 1885
 
-with h5py.File('rainfields_sampleWatershed.h5','w') as f2:
+with h5py.File(rainfall_outputFile,'w') as f2:
     f2.create_group('sample_event')
     f2['sample_event'].create_dataset('rainfall', shape=(time_step, no_of_cell), dtype='f' )
 
     rainArray =  f2['sample_event']['rainfall']
     data = []
     for i in range(time_step):
-        one_time_ppt_all_cell = numpy.random.rand(no_of_cell,1)*0
+        one_time_ppt_all_cell = numpy.random.rand(no_of_cell,1)*100000
         data.append(one_time_ppt_all_cell)
 
     rainArray = data
 
 
 
-with h5py.File('ET_sampleWatershed.h5','w' ) as f1:
+with h5py.File(ET_outputFile,'w' ) as f1:
     f1.create_group('sample_event')
     f1['sample_event'].create_dataset('ETo', shape=( time_step, no_of_cell), dtype='f' )
     f1['sample_event'].create_dataset('ETr', shape=( time_step, no_of_cell), dtype='f' )
@@ -31,7 +34,7 @@ with h5py.File('ET_sampleWatershed.h5','w' ) as f1:
 
     data = []
     for i in range(time_step):
-        one_time_ppt_all_cell = numpy.random.rand(no_of_cell,1)*0
+        one_time_ppt_all_cell = numpy.random.rand(no_of_cell,1)*0.1
         data.append(one_time_ppt_all_cell)
 
     EToArray = data
@@ -75,7 +78,9 @@ with h5py.File('ET_sampleWatershed.h5','w' ) as f1:
 # print '\t',dset[:-4]
 # print '\t',dset[:5]
 # print '\t',dset[0:2]
-#
+# f['sample_event']['ETo'].shape
+
+
 # f.close()
 #
 #

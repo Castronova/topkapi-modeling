@@ -3,9 +3,6 @@ import pytopkapi
 from pytopkapi.results_analysis import plot_Qsim_Qobs_Rain, plot_soil_moisture_maps
 import inspect
 
-# filename = inspect.getframeinfo(inspect.currentframe()).filename
-# execpath = os.path.dirname(os.path.abspath(filename))
-# drive_letter  = execpath[0]
 
 execpath = os.getcwd()
 

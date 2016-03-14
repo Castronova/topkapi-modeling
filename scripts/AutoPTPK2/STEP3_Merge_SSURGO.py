@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 #Input a folder that has all the folders of names similar to  UT012, Ut027 etc.
-path2collectionOfssurgoFolders = r"C:\Users\Prasanna\Box Sync\New Watershed Near RBC\SSURGO_redButteCreekFolder"
+path2collectionOfssurgoFolders = r"C:\Users\Prasanna\Box Sync\00 Red Butte Creek\SSURGO_Folder"
 path2lookupTable = r"C:\Users\Prasanna\Google Drive\RESEARCH\AutoPTPK2\GREENAMPT_LOOKUPTABLE.csv"
 path2lookupTable = os.path.join(os.getcwd(), "GREENAMPT_LOOKUPTABLE.csv")    #have not tested though
 
