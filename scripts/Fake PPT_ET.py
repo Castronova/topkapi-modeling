@@ -3,9 +3,9 @@
 ##### my code #####
 import os, h5py , numpy
 
-path = "../simulations/TEST SIMULAITON2/run_the_model/forcing_variables"
-rainfall_outputFile = os.path.join(path, "rainfields_sampleWatershed.h5")
-ET_outputFile = os.path.join(path, "ET_sampleWatershed.h5")
+path = "../simulations/TEST SIMULAITON3/run_the_model/forcing_variables"
+rainfall_outputFile = os.path.join(path, "rainfields_RBC.h5")
+ET_outputFile = os.path.join(path, "ET_RBC.h5")
 
 time_step = 161
 no_of_cell = 1885
