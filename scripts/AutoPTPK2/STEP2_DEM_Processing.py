@@ -12,6 +12,7 @@ Clipping / extracting by a mask
 Soil depth is in string
 
 Snapped gage/outlet needs to be created as a seperated point shapefile
+Also, confusion on why mask has value=2 and not 1
 '''
 
 arcpy.env.overwriteOutput = True
@@ -61,16 +62,16 @@ mask = "mask"
 # arcpy.Dissolve_management(CatchPoly_shp, CatchPolyDissolve_shp, "GRIDCODE", "", "MULTI_PART", "DISSOLVE_LINES")
 
 
-#-------------------------dtarb code---------------------------------
-outFill = Fill(DEM) ;                                   outFill.save("fel")  ;                   print "Fill Done"        #the result is in memory
-outFlowDirection = FlowDirection("fel") ;               outFlowDirection.save(fdr)
+#-------------------------dt code---------------------------------
+outFill = Fill(DEM) ;                                   outFill.save(fill)  ;                   print "Fill Done"        #the result is in memory
+outFlowDirection = FlowDirection(fill) ;               outFlowDirection.save(fdr)
 outFlowAccumulation = FlowAccumulation(fdr);            outFlowAccumulation.save(fac) ;           print "fac"
 arcpy.gp.FlowDirection_sa(fill, fdr, "NORMAL", slope)
 outSnapPour = SnapPourPoint(gage, fac, 100,"OBJECTID"); outSnapPour.save(Outlet) ;                 print "snappoint done"   #snap the gagepoint from gage to fac, within a distance of 50m #saves it as a raster
 outWatershed = Watershed(fdr, Outlet);                  outWatershed.save(mask)
 StreamRaster = (Raster(fac) >= float(threshold)) & (Raster(mask) >= 0) ; StreamRaster.save(str);   print "StreamNet done"  #to define stream only upstream of the outlet
 outStreamLink = StreamLink(str,fdr) ;                   outStreamLink.save(strlnk)
-Catchment = Watershed(fdr, strlnk);                     Catchment.save("catchment")         #we do not need catchment though, mask is good for us
+Catchment = Watershed(fdr, strlnk);                     Catchment.save("catchment")         # we do not need catchment though, mask is good for us
 
 
 
@@ -89,7 +90,7 @@ arcpy.AddMessage("********** Fdr, Fac, Stream processing complete **********")
 arcpy.gp.ExtractByMask_sa(str, mask, str+"_c")
 arcpy.gp.ExtractByMask_sa(fdr, mask, fdr+"_c")
 arcpy.gp.ExtractByMask_sa(slope, mask, slope+"_c")
-arcpy.gp.ExtractByMask_sa(DEM, mask, DEM+"_c")
+arcpy.gp.ExtractByMask_sa(fill, mask, DEM+"_fc")      # f for fill, c for clip
 arcpy.gp.ExtractByMask_sa(land_use, mask, land_use+"_c")
 
 #after clipping ,we only use clipped files
@@ -98,7 +99,7 @@ str = str +"_c"
 fdr = fdr +"_c"
 slope = slope +"_c"
 DEM = DEM +"_c"
-SD = "SD_c"    #_c for consistency in naming
+SD = "SD_c"    # c for consistency in naming
 
 #strahler for mannings for channel
 arcpy.gp.StreamOrder_sa(str, fdr, STRAHLER, "STRAHLER")  # the last parameter, Strahler string, is actually a method of ordering stream. NOT A NAME
@@ -127,8 +128,8 @@ arcpy.AddMessage("########## DEM processing complete ##########")
 #REclassify to change no data to -9999
 arcpy.gp.Reclassify_sa(fdr, "Value", "1 1;2 2;4 4;8 8;16 16;32 32;64 64;128 128;NODATA -9999", fdr+"_r", "DATA")
 arcpy.gp.Reclassify_sa(str, "Value", "0 0;1 1;NODATA -9999", str + "_r", "DATA")
-arcpy.gp.Reclassify_sa(mask, "Value", "1 1;NODATA -9999", mask + "_r", "DATA")
-arcpy.gp.RasterCalculator_sa(""""mask_c"+.5""", SD)                                                    #creating soil depth raster, len = 1.5
+arcpy.gp.Reclassify_sa(mask, "Value", "2 1;NODATA -9999", mask + "_r", "DATA")
+# arcpy.gp.RasterCalculator_sa(""""mask_c"+.5""", SD)                                                    #creating soil depth raster, len = 1.5
 arcpy.AddMessage("########## Assigning -9999 to NoData, mask and Soil depth creation  completed ##########")
 
 
