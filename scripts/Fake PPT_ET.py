@@ -3,12 +3,12 @@
 ##### my code #####
 import os, h5py , numpy
 
-path = "../simulations/TEST SIMULAITON3/run_the_model/forcing_variables"
+path = "../simulations/TEST SIMULAITON5/run_the_model/forcing_variables"
 rainfall_outputFile = os.path.join(path, "rainfields_RBC.h5")
 ET_outputFile = os.path.join(path, "ET_RBC.h5")
 
 time_step = 161
-no_of_cell = 1885
+no_of_cell = 19665
 
 with h5py.File(rainfall_outputFile,'w') as f2:
     f2.create_group('sample_event')
@@ -17,7 +17,7 @@ with h5py.File(rainfall_outputFile,'w') as f2:
     rainArray =  f2['sample_event']['rainfall']
     data = []
     for i in range(time_step):
-        one_time_ppt_all_cell = numpy.random.rand(no_of_cell,1)*100000
+        one_time_ppt_all_cell = numpy.random.rand(no_of_cell,1)*100
         data.append(one_time_ppt_all_cell)
 
     rainArray = data

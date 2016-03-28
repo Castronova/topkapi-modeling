@@ -39,12 +39,12 @@ mxd = arcpy.mapping.MapDocument("CURRENT")                                  # ge
 df = arcpy.mapping.ListDataFrames(mxd,"*")[0]                               #first dataframe in the document
 
 
-#create a list of folders containing SSURGO folders only
+# create a list of folders containing SSURGO folders only
 folderList = []
 [folderList.append(folders) for folders in os.listdir(path2ssurgoFolders)
     if os.path.isdir(os.path.join(path2ssurgoFolders, folders))]
 
-#Each ssurgo folder, one at a time
+# Each ssurgo folder, one at a time
 for folder in folderList:
 
     path2ssurgo= path2ssurgoFolders + "/" + folder
@@ -102,24 +102,29 @@ for folder in folderList:
          if not os.path.exists(outDir+"/"+firstNameOfSoilProperty):
              dir4eachRaster = outDir+"/"+firstNameOfSoilProperty
              os.makedirs(dir4eachRaster)
-             arcpy.AddMessage("### ***' %s' *** , made ###"%dir4eachRaster )
+             arcpy.AddMessage("' %s' *** , made "%dir4eachRaster )
 
 
          try:
 
 
-             tempOutputRasterFullpath    = outDir+"/"+firstNameOfSoilProperty+"/"+ firstNameOfSoilProperty+ "_"+folder
+             tempOutputRasterFullpath = outDir+"/"+firstNameOfSoilProperty+"/"+ firstNameOfSoilProperty+ "_"+folder
 
              arcpy.FeatureToRaster_conversion(in_features=muShapefileAsLayer,
                                               field="MUKEY-Vs-Values.csv." + a_soil_property[0] ,
                                               out_raster= tempOutputRasterFullpath   , cell_size= MatchDEM  )
 
 
-             arcpy.gp.ExtractByMask_sa(tempOutputRasterFullpath, MatchDEM, tempOutputRasterFullpath+"c")       #c=clipped
+             arcpy.gp.ExtractByMask_sa(tempOutputRasterFullpath, MatchDEM, tempOutputRasterFullpath+"X")       #c=clipped
+
+             # to clip the rasters to the consistent extent, so that their (nrows x ncol) matches
+             arcpy.Clip_management(in_raster=tempOutputRasterFullpath+"X",
+                      out_raster= tempOutputRasterFullpath+"c" , in_template_dataset=MatchDEM, nodata_value="-9999",
+                      clipping_geometry="NONE", maintain_clipping_extent="MAINTAIN_EXTENT")
 
              arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%sc'"%tempOutputRasterFullpath,
                                                   Output_Workspace=outDir, Raster_Format="TIFF")
-             arcpy.AddMessage("### Raster %sc created ###" %tempOutputRasterFullpath)
+             arcpy.AddMessage("Raster %sc created " %tempOutputRasterFullpath)
 
 
              #convert the raster to tif format
@@ -163,7 +168,6 @@ try:
 
 except Exception,e :
     arcpy.AddMessage("!!!!!!!!!!Error in merging encouncered, at line 159 :"+ str(e))
-
 
 
 

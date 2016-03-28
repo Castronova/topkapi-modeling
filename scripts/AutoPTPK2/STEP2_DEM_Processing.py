@@ -24,7 +24,7 @@ land_use = arcpy.GetParameterAsText(1)
 outDir= arcpy.GetParameterAsText(2)        # output directory
 gage = arcpy.GetParameterAsText(3)        # boundary
 threshold = arcpy.GetParameterAsText(4)    # Threshold for defining stream
-#gage = arcpy.GetParameterAsText(5)         # Outlet point for the catchment
+# gage = arcpy.GetParameterAsText(5)         # Outlet point for the catchment
 
 if threshold == "": threshold = "3000"     # is a source of bug, if the cell size is big but this is small
 
@@ -63,27 +63,35 @@ mask = "mask"
 
 
 #-------------------------dt code---------------------------------
-outFill = Fill(DEM) ;                                   outFill.save(fill)  ;                   print "Fill Done"        #the result is in memory
-outFlowDirection = FlowDirection(fill) ;               outFlowDirection.save(fdr)
-outFlowAccumulation = FlowAccumulation(fdr);            outFlowAccumulation.save(fac) ;           print "fac"
-arcpy.gp.FlowDirection_sa(fill, fdr, "NORMAL", slope)
-outSnapPour = SnapPourPoint(gage, fac, 100,"OBJECTID"); outSnapPour.save(Outlet) ;                 print "snappoint done"   #snap the gagepoint from gage to fac, within a distance of 50m #saves it as a raster
-outWatershed = Watershed(fdr, Outlet);                  outWatershed.save(mask)
-StreamRaster = (Raster(fac) >= float(threshold)) & (Raster(mask) >= 0) ; StreamRaster.save(str);   print "StreamNet done"  #to define stream only upstream of the outlet
-outStreamLink = StreamLink(str,fdr) ;                   outStreamLink.save(strlnk)
-Catchment = Watershed(fdr, strlnk);                     Catchment.save("catchment")         # we do not need catchment though, mask is good for us
+# outFill = Fill(DEM) ;                                   outFill.save(fill)  ;                   print "Fill Done"        #the result is in memory
+# outFlowDirection = FlowDirection(fill) ;               outFlowDirection.save(fdr)
+# outFlowAccumulation = FlowAccumulation(fdr);            outFlowAccumulation.save(fac) ;           print "fac"
+# arcpy.gp.FlowDirection_sa(fill, fdr, "NORMAL", slope)
+# outSnapPour = SnapPourPoint(gage, fac, 100,"OBJECTID"); outSnapPour.save(Outlet) ;                 print "snappoint done"   #snap the gagepoint from gage to fac, within a distance of 50m #saves it as a raster
+# outWatershed = Watershed(fdr, Outlet);                  outWatershed.save(mask)
+# StreamRaster = (Raster(fac) >= float(threshold)) & (Raster(mask) >= 0) ; StreamRaster.save(str);   print "StreamNet done"  #to define stream only upstream of the outlet
+# outStreamLink = StreamLink(str,fdr) ;                   outStreamLink.save(strlnk)
+# Catchment = Watershed(fdr, strlnk);                     Catchment.save("catchment")         # we do not need catchment though, mask is good for us
+# StreamToFeature(strlnk, fdr, "Streamnet","NO_SIMPLIFY")                                                               #stream defined
+# arcpy.RasterToPolygon_conversion("catchment", "CatchTemp", "NO_SIMPLIFY")
+# arcpy.Dissolve_management("catchtemp", "CatchPoly", "GRIDCODE")                                                            #dissolves extra catchments
+# arcpy.Dissolve_management(in_features=outDir+"/catchtemp", out_feature_class="C:/Users/Prasanna/Box Sync/Test Wshed Point GDB/CatchPoly.shp", dissolve_field="GRIDCODE", statistics_fields="", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
+# print "Catchment Dissolved"
+
+
+#trial
+Fill(DEM).save(fill)
+FlowDirection(fill).save(fdr)
+FlowAccumulation(fdr).save(fac)
+Slope(fill, "DEGREE", "1").save(slope)
+#arcpy.gp.Slope_sa(fill, slope, "DEGREE", "1")
+FlowDirection(fill, "NORMAL",slope).save(fdr)
+SnapPourPoint(gage, fac, 100,"OBJECTID").save(Outlet)
+Watershed(fdr, Outlet).save(mask)
+StreamRaster = (Raster(fac) >= float(threshold)) & (Raster(mask) >= 0) ; StreamRaster.save(str)
 
 
 
-
-
-StreamToFeature(strlnk, fdr, "Streamnet","NO_SIMPLIFY")                                                               #stream defined
-arcpy.RasterToPolygon_conversion("catchment", "CatchTemp", "NO_SIMPLIFY")
-
-arcpy.Dissolve_management("catchtemp", "CatchPoly", "GRIDCODE")                                                            #dissolves extra catchments
-#arcpy.Dissolve_management(in_features=outDir+"/catchtemp", out_feature_class="C:/Users/Prasanna/Box Sync/Test Wshed Point GDB/CatchPoly.shp", dissolve_field="GRIDCODE", statistics_fields="", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
-print "Catchment Dissolved"
-#-------------------------dtarb code ends---------------------------------
 arcpy.AddMessage("********** Fdr, Fac, Stream processing complete **********")
 
 #clip to the mask--------------------------------------------------------
@@ -93,12 +101,11 @@ arcpy.gp.ExtractByMask_sa(slope, mask, slope+"_c")
 arcpy.gp.ExtractByMask_sa(fill, mask, DEM+"_fc")      # f for fill, c for clip
 arcpy.gp.ExtractByMask_sa(land_use, mask, land_use+"_c")
 
-#after clipping ,we only use clipped files
+# after clipping, we only use clipped files
 land_use = land_use +"_c"
 str = str +"_c"
 fdr = fdr +"_c"
 slope = slope +"_c"
-DEM = DEM +"_c"
 SD = "SD_c"    # c for consistency in naming
 
 #strahler for mannings for channel
@@ -128,17 +135,16 @@ arcpy.AddMessage("########## DEM processing complete ##########")
 #REclassify to change no data to -9999
 arcpy.gp.Reclassify_sa(fdr, "Value", "1 1;2 2;4 4;8 8;16 16;32 32;64 64;128 128;NODATA -9999", fdr+"_r", "DATA")
 arcpy.gp.Reclassify_sa(str, "Value", "0 0;1 1;NODATA -9999", str + "_r", "DATA")
-arcpy.gp.Reclassify_sa(mask, "Value", "2 1;NODATA -9999", mask + "_r", "DATA")
+arcpy.gp.Reclassify_sa(mask, "Value", "2 1", mask + "_r", "DATA")
 # arcpy.gp.RasterCalculator_sa(""""mask_c"+.5""", SD)                                                    #creating soil depth raster, len = 1.5
 arcpy.AddMessage("########## Assigning -9999 to NoData, mask and Soil depth creation  completed ##########")
 
 
-#after reclassiifying
+# after reclassifying
 str = str +"_r"
 fdr = fdr +"_r"
-slope = slope +"_r"
-DEM = DEM +"_r"
 mask = mask + "_r"
+DEM = DEM+"_fc"
 
 # Add n_Channel and n_Overland to layer and then to map document
 mxd = arcpy.mapping.MapDocument("CURRENT")                      # get the map document
@@ -150,8 +156,8 @@ arcpy.mapping.AddLayer(df, fdr_layer ,"TOP")
 fdr_layer = arcpy.mapping.Layer(outDir+"/"+ DEM )                 # create a new layer
 arcpy.mapping.AddLayer(df, fdr_layer ,"TOP")
 
-n_Channel_layer = arcpy.mapping.Layer(outDir+"/n_Channel")      # create a new layer
-arcpy.mapping.AddLayer(df, n_Channel_layer ,"TOP")
+# n_Channel_layer = arcpy.mapping.Layer(outDir+"/n_Channel")      # create a new layer
+# arcpy.mapping.AddLayer(df, n_Channel_layer ,"TOP")
 
 n_Overland_layer = arcpy.mapping.Layer(outDir+"/n_Overland")    # create a new layer
 arcpy.mapping.AddLayer(df, n_Overland_layer,"TOP")
@@ -162,11 +168,6 @@ arcpy.mapping.AddLayer(df, fdr_layer ,"TOP")
 slope_layer = arcpy.mapping.Layer(outDir+"/"+ slope)                # create a new layer
 arcpy.mapping.AddLayer(df, slope_layer ,"TOP")
 
-layer = arcpy.mapping.Layer(outDir+"/"+ mask)                # create a new layer
-arcpy.mapping.AddLayer(df, layer ,"TOP")
-
-layer = arcpy.mapping.Layer(outDir+"/"+ SD)                # create a new layer
-arcpy.mapping.AddLayer(df, layer ,"TOP")
 
 
 
