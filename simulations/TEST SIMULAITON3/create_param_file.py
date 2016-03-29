@@ -1,6 +1,6 @@
 import pytopkapi
 import os
-#import inspect
+
 
 from pytopkapi.parameter_utils.create_file import generate_param_file
 

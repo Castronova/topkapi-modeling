@@ -1,7 +1,7 @@
 import os
 import pytopkapi
 from pytopkapi.results_analysis import plot_Qsim_Qobs_Rain, plot_soil_moisture_maps
-import inspect
+
 
 
 execpath = os.getcwd()
