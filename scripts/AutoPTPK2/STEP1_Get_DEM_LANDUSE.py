@@ -25,7 +25,7 @@ wshedBoundary = arcpy.GetParameterAsText(3)
 bufferDi= arcpy.GetParameterAsText(4)
 cell_size = arcpy.GetParameterAsText(5)
 
-arcpy.AddMessage("the inputs are %s %s %s %s %s %s "%(inUsername,inPassword, outDir,wshedBoundary,bufferDi, cell_size   ))
+arcpy.AddMessage("the inputs are %s %s %s %s %s %s "%(inUsername,inPassword, outDir,wshedBoundary,bufferDi, cell_size))
 def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,cell_size):
     '''
 
@@ -48,18 +48,18 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
             bufferDi = float(cell_size) * 3
 
     # Set workspace environment
-    arcpy.env.workspace = arcpy.env.scratchWorkspace = outDir
+    arcpy.env.workspace  = outDir   # = arcpy.env.scratchWorkspace
     #arcpy.env.outputCoordinateSystem = arcpy.SpatialReference(102008) #equal area ... projection
     #arcpy.env.outputCoordinateSystem = arcpy.SpatialReference("WGS 1984 UTM Zone 12N")
 
     Boundary = "Boundary"
 
-    # Add Data to Geodatabase
-    arcpy.FeatureClassToFeatureClass_conversion(wshedBoundary, outDir, Boundary)  # to convert feature to feature class (as contained in geodatabase)
-    arcpy.MakeFeatureLayer_management(Boundary, Boundary)                         # creates temporary layer
+    # # Add Data to Geodatabase
+    # arcpy.FeatureClassToFeatureClass_conversion(wshedBoundary, outDir, "Boundary")  # to convert feature to feature class (as contained in geodatabase)
+    # arcpy.MakeFeatureLayer_management("Boundary", "Boundary")                         # creates temporary layer
 
     # Buffer
-    arcpy.Buffer_analysis(Boundary, "Buffer", str(bufferDi)+" Meters", "FULL", "ROUND", "NONE", "", "PLANAR")
+    arcpy.Buffer_analysis(wshedBoundary, "Buffer", str(bufferDi)+" Meters", "FULL", "ROUND", "NONE", "", "PLANAR")
     arcpy.MakeFeatureLayer_management("Buffer", "Buffer")                        #creates temporary layer
 
     # Connect to ArcGIS Servers
@@ -126,11 +126,22 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
     #if cell size given, need to resample here
     if cell_size != "":
         """ resample to the user specified resolution """
-        arcpy.Resample_management(in_raster= "DEM_Prj",
+
+        arcpy.CopyRaster_management(in_raster="DEM_Prj.tif", out_rasterdataset="DEM_temp", config_keyword="", background_value="", nodata_value="-9999", onebit_to_eightbit="NONE", colormap_to_RGB="NONE", pixel_type="", scale_pixel_value="NONE", RGB_to_Colormap="NONE")
+
+        arcpy.Resample_management(in_raster= "DEM_temp",
                                   out_raster= "DEM_Prj",
                                   cell_size= str(cell_size)+" "+str(cell_size), resampling_type="NEAREST")
 
-        arcpy.Resample_management(in_raster= "Land_Use_Prj",
+        arcpy.CopyRaster_management(in_raster="Land_Use_Prj.tif",
+                                    out_rasterdataset="Landuse_temp",
+                                    config_keyword="", background_value="",
+                                    nodata_value="-9999",
+                                    onebit_to_eightbit="NONE",
+                                    colormap_to_RGB="NONE",
+                                    pixel_type="", scale_pixel_value="NONE",
+                                    RGB_to_Colormap="NONE")
+        arcpy.Resample_management(in_raster= "Landuse_temp",
                                   out_raster= "Land_Use_Prj",
                                   cell_size=str(cell_size)+" "+str(cell_size), resampling_type="NEAREST")
 

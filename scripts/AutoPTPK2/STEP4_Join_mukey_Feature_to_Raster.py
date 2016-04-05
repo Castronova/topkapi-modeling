@@ -57,7 +57,7 @@ def step4_join_mukey_feature2raster(path2ssurgoFolders,outDir,MatchRaster ):
         path2ssurgo= path2ssurgoFolders + "/" + folder
         path2tabular = path2ssurgo+"/tabular"
         path2Spatial= path2ssurgo+"/spatial"
-        arcpy.env.workspace = arcpy.env.scratchWorkspace = path2ssurgo
+        arcpy.env.workspace =  path2ssurgo   # arcpy.env.scratchWorkspace =
 
         muShapefile = os.listdir(path2Spatial)[1].split('.')[0]                             #muShapefile = 'soilmu_a_ut612'
         arcpy.AddMessage("### ***'%s'***  shapefile found was " %muShapefile)
@@ -128,19 +128,6 @@ def step4_join_mukey_feature2raster(path2ssurgoFolders,outDir,MatchRaster ):
                  arcpy.Clip_management(in_raster=tempOutputRasterFullpath+"X",
                           out_raster= tempOutputRasterFullpath+"c" , in_template_dataset=MatchRaster, nodata_value="-9999",
                           clipping_geometry="NONE", maintain_clipping_extent="MAINTAIN_EXTENT")
-
-                 # arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%sc'"%tempOutputRasterFullpath,
-                 #                                      Output_Workspace=outDir, Raster_Format="TIFF")
-                 # arcpy.AddMessage("Raster %sc created " %tempOutputRasterFullpath)
-
-
-                 #convert the raster to tif format
-                 #arcpy.RasterToOtherFormat_conversion(Input_Rasters=tempOutputRasterFullpath, Output_Workspace=outDir+"/"+firstNameOfSoilProperty , Raster_Format="TIFF")
-
-                 # newRasterlayer = arcpy.mapping.Layer(tempOutputRasterFullpath+"c")    # create a new layer
-                 # arcpy.mapping.AddLayer(df, newRasterlayer,"TOP")
-
-
 
              except Exception, e:
                  arcpy.AddMessage("!!!!!!!!!!Error encouncered at line 114 :"+ str(e))

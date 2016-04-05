@@ -33,7 +33,7 @@ def step5_convert_rasters_to_tiff(SSURGO_raster_folder, DEM_rasters_folder, outp
                 print e
 
     except Exception, e:
-     arcpy.AddMessage("!!!!!!!!!!Error encouncered during conversion to tiff ")
+        arcpy.AddMessage("!!!!!!!!!!Error encouncered during conversion to tiff from SSURGO rasters ")
 
 
 
@@ -42,14 +42,14 @@ def step5_convert_rasters_to_tiff(SSURGO_raster_folder, DEM_rasters_folder, outp
     for raster in raster_list_from_DEM_processed:
         f = os.path.join(DEM_rasters_folder , raster)
         try:
-            arcpy.RasterToOtherFormat_conversion(Input_Rasters=f.split(".")[0],
+            arcpy.RasterToOtherFormat_conversion(Input_Rasters=f,
                                               Output_Workspace=output_tiff, Raster_Format="TIFF")
 
             newRasterlayer = arcpy.mapping.Layer(tempOutputRasterFullpath+"c")    # create a new layer
             arcpy.mapping.AddLayer(df, newRasterlayer,"TOP")
             arcpy.AddMessage("### Raster created ###")
         except Exception, e:
-            print e
+            arcpy.AddMessage("!!!!!!!!!!Error encouncered during conversion to tiff from DEM processing rasters ")
 
 
     try:
