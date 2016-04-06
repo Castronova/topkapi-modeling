@@ -21,6 +21,8 @@ cell_size = arcpy.GetParameterAsText(5)
 outlet_point_sf = arcpy.GetParameterAsText(6)   # boundary
 threshold = arcpy.GetParameterAsText(7)        # Threshold for defining stream
 path2ssurgoFolders = arcpy.GetParameterAsText(8)
+outCS = arcpy.GetParameterAsText(9)
+
 # shapefile_fieldAdded = arcpy.GetParameterAsText(10)
 # DEM, Landuse, .... [user input files, not downloaded]
 
@@ -51,7 +53,7 @@ except Exception, e:
 
 
 # Step1, download the data
-step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size)
+step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
 
 # Step2
 DEM = os.path.join(raw_files_outDir, "DEM_Prj")

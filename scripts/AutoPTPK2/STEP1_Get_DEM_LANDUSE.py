@@ -26,7 +26,7 @@ bufferDi= arcpy.GetParameterAsText(4)
 cell_size = arcpy.GetParameterAsText(5)
 
 arcpy.AddMessage("the inputs are %s %s %s %s %s %s "%(inUsername,inPassword, outDir,wshedBoundary,bufferDi, cell_size))
-def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,cell_size):
+def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,cell_size, projection_file):
     '''
 
     :param inUsername: ArcGIS online Username
@@ -50,7 +50,11 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
     # Set workspace environment
     arcpy.env.workspace  = outDir   # = arcpy.env.scratchWorkspace
     #arcpy.env.outputCoordinateSystem = arcpy.SpatialReference(102008) #equal area ... projection
-    #arcpy.env.outputCoordinateSystem = arcpy.SpatialReference("WGS 1984 UTM Zone 12N")
+
+    # Untested code, for spatial coordiantes system
+    if projection_file == "":
+        arcpy.env.outputCoordinateSystem = arcpy.SpatialReference("WGS 1984 UTM Zone 12N")
+        projection_file = arcpy.SpatialReference("WGS 1984 UTM Zone 12N")
 
     Boundary = "Boundary"
 
@@ -58,9 +62,9 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
     # arcpy.FeatureClassToFeatureClass_conversion(wshedBoundary, outDir, "Boundary")  # to convert feature to feature class (as contained in geodatabase)
     # arcpy.MakeFeatureLayer_management("Boundary", "Boundary")                         # creates temporary layer
 
-    # Buffer
-    arcpy.Buffer_analysis(wshedBoundary, "Buffer", str(bufferDi)+" Meters", "FULL", "ROUND", "NONE", "", "PLANAR")
-    arcpy.MakeFeatureLayer_management("Buffer", "Buffer")                        #creates temporary layer
+    # # Buffer
+    # arcpy.Buffer_analysis(wshedBoundary, "Buffer", str(bufferDi)+" Meters", "FULL", "ROUND", "NONE", "", "PLANAR")
+    # arcpy.MakeFeatureLayer_management("Buffer", "Buffer")                        #creates temporary layer
 
     # Connect to ArcGIS Servers
     out_folder_path = 'GIS Servers'
@@ -97,7 +101,7 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
     """ DEM, 30m NED """
     NED30m_ImageServer = "GIS Servers\\Elevation\\NED30m.ImageServer"
     arcpy.MakeImageServerLayer_management(NED30m_ImageServer, "NED30m_Layer")
-    arcpy.gp.ExtractByMask_sa("NED30m_Layer", "Buffer", "DEM")
+    arcpy.gp.ExtractByMask_sa("NED30m_Layer", wshedBoundary, "DEM")      #"Buffer" replaced by wshedBoundary
 
     arcpy.env.snapRaster = "DEM"                                              # Set Snap Raster environment
 
