@@ -24,8 +24,9 @@ outDir = arcpy.GetParameterAsText(2)
 wshedBoundary = arcpy.GetParameterAsText(3)
 bufferDi= arcpy.GetParameterAsText(4)
 cell_size = arcpy.GetParameterAsText(5)
+projection_file =  arcpy.GetParameterAsText(6)
 
-arcpy.AddMessage("the inputs are %s %s %s %s %s %s "%(inUsername,inPassword, outDir,wshedBoundary,bufferDi, cell_size))
+
 def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,cell_size, projection_file):
     '''
 
@@ -167,5 +168,13 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
     arcpy.mapping.AddLayer(df, Buffer_layer,"TOP")
 
 if __name__ == "__main__":
-    step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,cell_size)
+    #defaulted, to make things easier
+    if inUsername == "": inUsername = "prasanna_usu"
+    if inPassword  == "": inPassword = "Hydrology12!@"
+    if bufferDi == "":
+        if cell_size == "":
+            bufferDi = 100
+        else:
+            bufferDi = float(cell_size) * 3
+    step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,cell_size, projection_file)
 

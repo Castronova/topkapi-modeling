@@ -53,9 +53,10 @@ except Exception, e:
 
 
 # Step1, download the data
-step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
+# step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
 
 # Step2
+raw_files_outDir = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb"
 DEM = os.path.join(raw_files_outDir, "DEM_Prj")
 land_use = os.path.join(raw_files_outDir, "Land_Use_Prj")
 step2_dem_processing(DEM, land_use ,raw_files_outDir , outlet_point_sf, threshold)
