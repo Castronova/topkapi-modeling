@@ -43,6 +43,7 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     arcpy.env.workspace = arcpy.env.scratchWorkspace = outDir
     # arcpy.env.outputCoordinateSystem = arcpy.SpatialReference("WGS 1984 UTM Zone 12N")
     arcpy.env.snapRaster = DEM              # Set Snap Raster environment
+    arcpy.env.overwriteOutput = True
 
     fill = "fel"  #fill
     fdr =  'fdr'

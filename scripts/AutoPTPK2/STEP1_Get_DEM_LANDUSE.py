@@ -5,13 +5,6 @@ import sys
 
 Future Improvements:
 Buffer distance and cell size meaningful values
-User defined Projection
-Folder and personal gdb naming convention. And their automatic creation
-What boundary to use to clip the resulting rasters
-
-Untested:
-User defined resolution
-Creating folders, and personal gdb
 '''
 
 
@@ -28,8 +21,7 @@ projection_file =  arcpy.GetParameterAsText(6)
 
 
 def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,cell_size, projection_file):
-    '''
-
+    """
     :param inUsername: ArcGIS online Username
     :param inPassword: ArcGIS online password
     :param outDir: geodatabase (or directory) where the downlaoded files will be saved
@@ -37,9 +29,9 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
     :param bufferDi: Buffer distance in meters to download DEM and landuse. Serves as factor of safety
     :param cell_size: The resolution or the cell size. A float (or integer) number, e.g. 30 or 100 etc.
     :return: downloads and saves the DEM and landuse rasters. Also, projects them to a UTM zone 12 (for now) CS
-    '''
+    """
 
-    #defaulted, to make things easier
+    # defaulted, to make things easier
     if inUsername == "": inUsername = "prasanna_usu"
     if inPassword  == "": inPassword = "Hydrology12!@"
     if bufferDi == "":
@@ -50,12 +42,12 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
 
     # Set workspace environment
     arcpy.env.workspace  = outDir   # = arcpy.env.scratchWorkspace
-    #arcpy.env.outputCoordinateSystem = arcpy.SpatialReference(102008) #equal area ... projection
 
-    # Untested code, for spatial coordiantes system
+    # If no projection defined, assume the area is in Northen Utah, i.e. UTM 12N
     if projection_file == "":
-        arcpy.env.outputCoordinateSystem = arcpy.SpatialReference("WGS 1984 UTM Zone 12N")
         projection_file = arcpy.SpatialReference("WGS 1984 UTM Zone 12N")
+    arcpy.env.outputCoordinateSystem = projection_file
+    arcpy.env.overwriteOutput = True
 
     Boundary = "Boundary"
 
@@ -111,18 +103,16 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
     arcpy.MakeImageServerLayer_management(NLCD_ImageServer,"NLCD_Layer")
     arcpy.gp.ExtractByMask_sa("NLCD_Layer", "DEM", "Land_Use")
 
-    arcpy.AddMessage("************DEM and Land Use data, i.e. NLCD , download complete************")
+    arcpy.AddMessage("DEM and Land Use data, i.e. NLCD , download complete")
 
 
 
 
-    """ Project DEM to UTM """
-    arcpy.ProjectRaster_management(in_raster="DEM", out_raster="DEM_Prj", out_coor_system="PROJCS['WGS_1984_UTM_Zone_12N',GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Transverse_Mercator'],PARAMETER['False_Easting',500000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-111.0],PARAMETER['Scale_Factor',0.9996],PARAMETER['Latitude_Of_Origin',0.0],UNIT['Meter',1.0]]", resampling_type="NEAREST", cell_size="30.922080775934 30.922080775934", geographic_transform="WGS_1984_(ITRF00)_To_NAD_1983", Registration_Point="", in_coor_system="PROJCS['North_America_Albers_Equal_Area_Conic',GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Albers'],PARAMETER['False_Easting',0.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-96.0],PARAMETER['Standard_Parallel_1',20.0],PARAMETER['Standard_Parallel_2',60.0],PARAMETER['Latitude_Of_Origin',40.0],UNIT['Meter',1.0]]")
+    # Project the rasters
+    arcpy.ProjectRaster_management(in_raster="DEM", out_raster="DEM_Prj", out_coor_system=projection_file)
+    arcpy.ProjectRaster_management(in_raster="Land_Use", out_raster="Land_Use_Prj", out_coor_system= projection_file)
 
-    """ Project Land Use to UTM """
-    arcpy.ProjectRaster_management(in_raster="Land_Use", out_raster="Land_Use_Prj", out_coor_system="PROJCS['WGS_1984_UTM_Zone_12N',GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Transverse_Mercator'],PARAMETER['False_Easting',500000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-111.0],PARAMETER['Scale_Factor',0.9996],PARAMETER['Latitude_Of_Origin',0.0],UNIT['Meter',1.0]]", resampling_type="NEAREST", cell_size="30.922080775934 30.922080775934", geographic_transform="WGS_1984_(ITRF00)_To_NAD_1983", Registration_Point="", in_coor_system="PROJCS['North_America_Albers_Equal_Area_Conic',GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Albers'],PARAMETER['False_Easting',0.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-96.0],PARAMETER['Standard_Parallel_1',20.0],PARAMETER['Standard_Parallel_2',60.0],PARAMETER['Latitude_Of_Origin',40.0],UNIT['Meter',1.0]]")
-
-    arcpy.AddMessage("************DEM and Land Use file projected to UTM************")
+    arcpy.AddMessage("DEM and Land Use file projected")
 
     #put DEM and Land_Use on maps as a layer
     mxd = arcpy.mapping.MapDocument("CURRENT")                                  # get the map document
@@ -132,49 +122,31 @@ def step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,ce
     if cell_size != "":
         """ resample to the user specified resolution """
 
-        arcpy.CopyRaster_management(in_raster="DEM_Prj.tif", out_rasterdataset="DEM_temp", config_keyword="", background_value="", nodata_value="-9999", onebit_to_eightbit="NONE", colormap_to_RGB="NONE", pixel_type="", scale_pixel_value="NONE", RGB_to_Colormap="NONE")
+        arcpy.CopyRaster_management(in_raster="DEM_Prj",
+                                    out_rasterdataset="DEM_temp",
+                                    nodata_value="-9999")
 
         arcpy.Resample_management(in_raster= "DEM_temp",
                                   out_raster= "DEM_Prj",
                                   cell_size= str(cell_size)+" "+str(cell_size), resampling_type="NEAREST")
 
-        arcpy.CopyRaster_management(in_raster="Land_Use_Prj.tif",
-                                    out_rasterdataset="Landuse_temp",
-                                    config_keyword="", background_value="",
-                                    nodata_value="-9999",
-                                    onebit_to_eightbit="NONE",
-                                    colormap_to_RGB="NONE",
-                                    pixel_type="", scale_pixel_value="NONE",
-                                    RGB_to_Colormap="NONE")
+        arcpy.CopyRaster_management(in_raster="Land_Use_Prj",
+                                out_rasterdataset="Landuse_temp",
+                                nodata_value="-9999")
         arcpy.Resample_management(in_raster= "Landuse_temp",
                                   out_raster= "Land_Use_Prj",
                                   cell_size=str(cell_size)+" "+str(cell_size), resampling_type="NEAREST")
 
         arcpy.AddMessage("************Resample DEM and Land Use with cell size %s m completed ************"%cell_size)
-        DEM_layer = arcpy.mapping.Layer(outDir+"/DEM_Prj")    # create a new layer
-        arcpy.mapping.AddLayer(df, DEM_layer,"TOP")
-
-        LandUse_layer = arcpy.mapping.Layer(outDir+"/Land_Use_Prj")    # create a new layer
-        arcpy.mapping.AddLayer(df, LandUse_layer,"TOP")
 
 
-    DEM_layer = arcpy.mapping.Layer(outDir+"/DEM_Prj")    # create a new layer
+    DEM_layer = arcpy.mapping.Layer("DEM_Prj")    # create a new layer
     arcpy.mapping.AddLayer(df, DEM_layer,"TOP")
 
-    LandUse_layer = arcpy.mapping.Layer(outDir+"/Land_Use_Prj")    # create a new layer
+    LandUse_layer = arcpy.mapping.Layer("Land_Use_Prj")    # create a new layer
     arcpy.mapping.AddLayer(df, LandUse_layer,"TOP")
 
-    Buffer_layer = arcpy.mapping.Layer(outDir+"/Buffer")    # create a new layer
-    arcpy.mapping.AddLayer(df, Buffer_layer,"TOP")
 
 if __name__ == "__main__":
-    #defaulted, to make things easier
-    if inUsername == "": inUsername = "prasanna_usu"
-    if inPassword  == "": inPassword = "Hydrology12!@"
-    if bufferDi == "":
-        if cell_size == "":
-            bufferDi = 100
-        else:
-            bufferDi = float(cell_size) * 3
     step1_get_dem_landuse(inUsername,inPassword,outDir,wshedBoundary,bufferDi,cell_size, projection_file)
 
