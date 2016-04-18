@@ -53,7 +53,7 @@ except Exception, e:
 
 
 # Step1, download the data
-# step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
+step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
 
 # Step2
 raw_files_outDir = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb"

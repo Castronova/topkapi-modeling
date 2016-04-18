@@ -8,10 +8,12 @@ this program is supposed to take ssurgo datafolder path as input
 and attach to soilmu_a_xxx the table combined for MUKEY earlier
 
 Limitations:
+---------------------
 you have to open the spatial soilmu_a_xxxx file for it to work
 if/when ssurgo replaces its folder and file naming convention, it wont work
----------------------
+
 Improvements:
+---------------------
 User defined coordinate system
 Converting to TIFs
 Soil_properties may be repeated
@@ -20,6 +22,8 @@ User feedback during processes, including percentage perhaps
 Tabs are not spaced appropriately
 Loading Layers into dataframe
 Names of variables, ksat etc. could also be flexible
+Important to clip the feature first, and then convert to raster. Because features likes STATSGO
+    are likely to be very large
 '''
 
 

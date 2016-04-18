@@ -1,4 +1,5 @@
 import arcpy
+import math
 from arcpy import env
 from arcpy.sa import *
 
@@ -13,6 +14,13 @@ Soil depth is in string
 
 Snapped outlet_point_sf/outlet needs to be created as a seperated point shapefile
 soil depth still missing
+SnapPourPoint distance = (5) *cell size
+Mask is created after delineating wshed from Outlet created in SnapPourPoint process. BUT,
+    the outlet raster created takes its value from a field in vector point outlet shapefile as user input
+    if the file does not have 1, the mask will end up with value != 1. Therefore,
+    for user input outlet, need to add field and assign value =1
+
+Threshold should also be such that the area draining = 25 km2
 '''
 
 arcpy.env.overwriteOutput = True
@@ -37,7 +45,9 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     :return:
     '''
 
-    if threshold == "": threshold = "3000"     # is a source of bug, if the cell size is big but this is small
+    # Un tested
+    if threshold == "": # threshold = "3000"
+        threshold = int (25. / ( math.sqrt( (arcpy.Describe(DEM).children[0].meanCellHeight)/1000. )))
 
     # Set workspace environment
     arcpy.env.workspace = arcpy.env.scratchWorkspace = outDir
@@ -97,7 +107,7 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     Slope(fill, "DEGREE", "1").save(slope)
     #arcpy.gp.Slope_sa(fill, slope, "DEGREE", "1")
     FlowDirection(fill, "NORMAL",slope).save(fdr)
-    SnapPourPoint(outlet_point_sf, fac, 100,"OBJECTID").save(Outlet)
+    SnapPourPoint(outlet_point_sf, fac, 100,"OBJECTID").save(Outlet) # 5* arcpy.Describe(DEM).children[0].meanCellHeight
     Watershed(fdr, Outlet).save(mask)
     StreamRaster = (Raster(fac) >= float(threshold)) & (Raster(mask) >= 0) ; StreamRaster.save(str)
     
