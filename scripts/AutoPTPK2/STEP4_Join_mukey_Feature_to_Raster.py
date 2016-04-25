@@ -24,6 +24,8 @@ Loading Layers into dataframe
 Names of variables, ksat etc. could also be flexible
 Important to clip the feature first, and then convert to raster. Because features likes STATSGO
     are likely to be very large
+THE PROJECTION OF SSURGO POLYGON IS NOT IN USER INPUT CS
+
 '''
 
 
@@ -67,10 +69,14 @@ def step4_join_mukey_feature2raster(path2ssurgoFolders,outDir,MatchRaster ):
         arcpy.AddMessage("### ***'%s'***  shapefile found was " %muShapefile)
 
         #project the shapefile in ssurgo table, FILE SELECTION
-        arcpy.Project_management(in_dataset=path2ssurgo+"/spatial/" + muShapefile +".shp",
+        try:
+            arcpy.Project_management(in_dataset=path2ssurgo+"/spatial/" + muShapefile +".shp",
                                  out_dataset=outDir + "/"+ muShapefile +"_prj",
                                  out_coor_system="PROJCS['WGS_1984_UTM_Zone_12N',GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Transverse_Mercator'],PARAMETER['False_Easting',500000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-111.0],PARAMETER['Scale_Factor',0.9996],PARAMETER['Latitude_Of_Origin',0.0],UNIT['Meter',1.0]]", transform_method="", in_coor_system="GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]", preserve_shape="NO_PRESERVE_SHAPE", max_deviation="")
-        arcpy.AddMessage("### Shapefile projected ###")
+            arcpy.AddMessage("### Shapefile projected ###")
+        except Exception, e:
+            print e
+            arcpy.AddMessage("### Shapefile projection failed ###")
 
 
         # to add the projected shapefile from ssurgo, as a layer to the map at the bottom of the TOC in data frame 0
@@ -94,7 +100,8 @@ def step4_join_mukey_feature2raster(path2ssurgoFolders,outDir,MatchRaster ):
                            ["Porosity_WtAvg","POR-t_"+folder ],
                            ["EffectivePorosity_WtAvg","EFPO-t_" +folder ] ,
                            ["BubblingPressure_Geometric_WtAvg", "BBL-t_"+folder ] ,
-                           ["PoreSizeDistribution_geometric_WtAvg_y","PSD-t_"+folder]
+                           ["PoreSizeDistribution_geometric_WtAvg_y","PSD-t_"+folder],
+                           ["HydroGrp", "GRP_"+folder]
                            ]
 
 
@@ -138,7 +145,7 @@ def step4_join_mukey_feature2raster(path2ssurgoFolders,outDir,MatchRaster ):
 
          print "Folder done: ", folder
         except Exception, e:
-         print "failed in folder ", folder
+            print "failed in folder ", folder
 
 
 

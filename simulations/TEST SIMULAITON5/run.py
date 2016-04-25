@@ -5,8 +5,8 @@ import os
 
 os.chdir(r"C:\Users\WIN10-HOME\Documents\topkapi-modeling\simulations\TEST SIMULAITON5\run_the_model")
 
-# pytopkapi.run('TOPKAPI.ini')
+# pytopkapi.run('run_the_model/TOPKAPI.ini')
 
 plot_Qsim_Qobs_Rain.run('plot-flow-precip.ini')
 
-#plot_soil_moisture_maps.run('plot-soil-moisture-maps.ini')
+plot_soil_moisture_maps.run('plot-soil-moisture-maps.ini')

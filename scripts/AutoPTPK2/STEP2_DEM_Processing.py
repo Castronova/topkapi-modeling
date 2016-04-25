@@ -107,18 +107,20 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     Slope(fill, "DEGREE", "1").save(slope)
     #arcpy.gp.Slope_sa(fill, slope, "DEGREE", "1")
     FlowDirection(fill, "NORMAL",slope).save(fdr)
-    SnapPourPoint(outlet_point_sf, fac, 100,"OBJECTID").save(Outlet) # 5* arcpy.Describe(DEM).children[0].meanCellHeight
+    SnapPourPoint(outlet_point_sf, fac, 100,"OBJECTID").save(Outlet) # 3* arcpy.Describe(DEM).children[0].meanCellHeight
     Watershed(fdr, Outlet).save(mask)
     StreamRaster = (Raster(fac) >= float(threshold)) & (Raster(mask) >= 0) ; StreamRaster.save(str)
-    
-    # Added code
-    outStreamLink = StreamLink(str,fdr) ;                   outStreamLink.save(strlnk)
-    Catchment = Watershed(fdr, strlnk);                     Catchment.save("catchment")         # we do not need catchment though, mask is good for us
-    StreamToFeature(strlnk, fdr, "Streamnet","NO_SIMPLIFY")                                                               #stream defined
-    arcpy.RasterToPolygon_conversion("catchment", "CatchTemp", "NO_SIMPLIFY")
-    arcpy.Dissolve_management("catchtemp", "CatchPoly", "GRIDCODE")                                                            #dissolves extra catchments
-    arcpy.Dissolve_management(in_features="catchtemp", out_feature_class="CatchPoly.shp", dissolve_field="GRIDCODE", statistics_fields="", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
-    
+
+    try:
+        # Added code
+        outStreamLink = StreamLink(str,fdr) ;                   outStreamLink.save(strlnk)
+        Catchment = Watershed(fdr, strlnk);                     Catchment.save("catchment")         # we do not need catchment though, mask is good for us
+        StreamToFeature(strlnk, fdr, "Streamnet","NO_SIMPLIFY")                                                               #stream defined
+        arcpy.RasterToPolygon_conversion("catchment", "CatchTemp", "NO_SIMPLIFY")
+        arcpy.Dissolve_management("catchtemp", "CatchPoly", "GRIDCODE")                                                            #dissolves extra catchments
+        arcpy.Dissolve_management(in_features="catchtemp", out_feature_class="CatchPoly.shp", dissolve_field="GRIDCODE", statistics_fields="", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
+    except Exception, e:
+        print e
 
 
     arcpy.AddMessage("********** Fdr, Fac, Stream processing complete **********")
