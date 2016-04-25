@@ -88,92 +88,12 @@ def step4_join_mukey_feature2raster(path2ssurgoFolders,outDir,MatchRaster ):
 
         try:
 
-         #join the table that had mUKEY mapped to all soil properties
-         arcpy.AddJoin_management(muShapefileAsLayer, "MUKEY", path2ssurgo+"/MUKEY-Vs-Values.csv", "MUKEY")
-         arcpy.AddMessage("Field Successfully added")
-
-
-         #NAMING CONVENTION: -s for ssurgo, and -t for lookup table
-         soilProperties = [["ksat_r_WtAvg", "KSAT-s_"+folder ],
-                           ["Ks_WtAvg", "KSAT-t_"+folder ],
-                           ["ResidualWaterContent_WtAvg", "RSM-t_"+folder ],
-                           ["Porosity_WtAvg","POR-t_"+folder ],
-                           ["EffectivePorosity_WtAvg","EFPO-t_" +folder ] ,
-                           ["BubblingPressure_Geometric_WtAvg", "BBL-t_"+folder ] ,
-                           ["PoreSizeDistribution_geometric_WtAvg_y","PSD-t_"+folder],
-                           ["HydroGrp", "GRP_"+folder]
-                           ]
-
-
-         #soilProperties = [[ "ksat_r_WtAvg", "Ksat-s_UT612" ], ["Ks_WtAvg", "Ksat-t_ut612" ], .... ]
-         for a_soil_property in soilProperties:
-
-
-             '''
-             covert from features to rasters
-             take first element of a_soil_property to find values in joint table,
-             and second element to name the raster
-             '''
-
-             firstNameOfSoilProperty = a_soil_property[1].split('_')[0]                 #e.g. Ksat-s, Bblpr-t, PoreSz-t etc.
-
-             if not os.path.exists(outDir+"/"+firstNameOfSoilProperty):
-                 dir4eachRaster = outDir+"/"+firstNameOfSoilProperty
-                 os.makedirs(dir4eachRaster)
-                 arcpy.AddMessage("' %s' *** , made "%dir4eachRaster )
-
-
-             try:
-
-
-                 tempOutputRasterFullpath = outDir+"/"+firstNameOfSoilProperty+"/"+ firstNameOfSoilProperty+ "_"+folder
-
-                 arcpy.FeatureToRaster_conversion(in_features=muShapefileAsLayer,
-                                                  field="MUKEY-Vs-Values.csv." + a_soil_property[0] ,
-                                                  out_raster= tempOutputRasterFullpath   , cell_size= MatchRaster  )
-
-
-                 arcpy.gp.ExtractByMask_sa(tempOutputRasterFullpath, MatchRaster, tempOutputRasterFullpath+"X")       #c=clipped
-
-                 # to clip the rasters to the consistent extent, so that their (nrows x ncol) matches
-                 arcpy.Clip_management(in_raster=tempOutputRasterFullpath+"X",
-                          out_raster= tempOutputRasterFullpath+"c" , in_template_dataset=MatchRaster, nodata_value="-9999",
-                          clipping_geometry="NONE", maintain_clipping_extent="MAINTAIN_EXTENT")
-
-             except Exception, e:
-                 arcpy.AddMessage("!!!!!!!!!!Error encouncered at line 114 :"+ str(e))
-
-         print "Folder done: ", folder
+            # join the table that had mUKEY mapped to all soil properties
+            arcpy.AddJoin_management(muShapefileAsLayer, "MUKEY", path2ssurgo+"/MUKEY-Vs-Values.csv", "MUKEY")
+            arcpy.AddMessage("Field Successfully added")
         except Exception, e:
-            print "failed in folder ", folder
-
-
-
-    soilProperties = [ ["ksat_r_WtAvg", "KSAT-s_"+folder ],
-                       ["Ks_WtAvg", "KSAT-t_"+folder ],
-                       ["ResidualWaterContent_WtAvg", "RSM-t_"+folder ],
-                       ["Porosity_WtAvg","POR-t_"+folder ],
-                       ["EffectivePorosity_WtAvg","EFPO-t_" +folder ] ,
-                       ["BubblingPressure_Geometric_WtAvg", "BBL-t_"+folder ] ,
-                       ["PoreSizeDistribution_geometric_WtAvg_y","PSD-t_"+folder]
-                       ]
-
-    try:
-
-        #merge rasters present in outDir
-        FOLDERSOFRASTERS = [folder.split('_')[0] for folder in [list[1] for list  in soilProperties]]
-
-        for afolderOfRaster in FOLDERSOFRASTERS:
-            arcpy.env.workspace = outDir+"/"+afolderOfRaster
-            raster_list=arcpy.ListRasters("", "tif")
-            arcpy.CompositeBands_management(raster_list, outDir+"/"+afolderOfRaster+".tif") #will save output on the same folder
-
-            newRasterlayer = arcpy.mapping.Layer(outDir+"/"+afolderOfRaster +".tif")    # create a new layer
-            arcpy.mapping.AddLayer(df, newRasterlayer,"TOP")
-
-    except Exception,e :
-        arcpy.AddMessage("!!!!!!!!!!Error in merging encouncered, at line 159 :"+ str(e))
-
+            print e
+        return
 
 if __name__ == "__main__":
     step4_join_mukey_feature2raster(path2ssurgoFolders,outDir,MatchRaster )

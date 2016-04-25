@@ -131,11 +131,11 @@ def step3_merge_ssurgo(path2collectionOfssurgoFolders ,path2lookupTable=lookupTa
                 print path2tabular+"\\MUKEY-"+ valueName  +".csv"
                 lastValueFile = pd.merge(lastValueFile, fl, on="MUKEY")
 
-            # print mukeyValuesAllMerged
+            # Print mukeyValuesAllMerged
             lastValueFile.to_csv(path2ssurgo+"\\MUKEY-Vs-Values.csv", index=False)
             print 'All values table written down in the ssurgo folder'
 
-            # create a schema.ini so that arcGIS can understand the MUKEY field
+            # Create a schema.ini so that arcGIS can understand the MUKEY field
             schema = open(path2ssurgo+"\\schema.ini", "w")
             schema.write("[MUKEY-Vs-Values.csv]"+ "\n" + "Col2=MUKEY Text")  #may not always be column 1 though
             schema.close()
