@@ -107,7 +107,7 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     Slope(fill, "DEGREE", "1").save(slope)
     #arcpy.gp.Slope_sa(fill, slope, "DEGREE", "1")
     FlowDirection(fill, "NORMAL",slope).save(fdr)
-    SnapPourPoint(outlet_point_sf, fac, 100,"OBJECTID").save(Outlet) # 3* arcpy.Describe(DEM).children[0].meanCellHeight
+    SnapPourPoint(outlet_point_sf, fac, 100,"").save(Outlet) # 3* arcpy.Describe(DEM).children[0].meanCellHeight
     Watershed(fdr, Outlet).save(mask)
     StreamRaster = (Raster(fac) >= float(threshold)) & (Raster(mask) >= 0) ; StreamRaster.save(str)
 
