@@ -45,9 +45,12 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     :return:
     '''
 
+    arcpy.AddMessage("*** This scripts Processes the DEM and Landuse data *** ")
+
     # Un tested
     if threshold == "": # threshold = "3000"
-        threshold = int (25. / ( math.sqrt( (arcpy.Describe(DEM).children[0].meanCellHeight)/1000. )))
+        area_threshold = 0.5 #km2
+        threshold = int (area_threshold / ( (arcpy.Describe(DEM).children[0].meanCellHeight)/1000. )**2)
 
     # Set workspace environment
     arcpy.env.workspace = arcpy.env.scratchWorkspace = outDir
@@ -113,17 +116,17 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
 
     try:
         # Added code
-        outStreamLink = StreamLink(str,fdr) ;                   outStreamLink.save(strlnk)
-        Catchment = Watershed(fdr, strlnk);                     Catchment.save("catchment")         # we do not need catchment though, mask is good for us
-        StreamToFeature(strlnk, fdr, "Streamnet","NO_SIMPLIFY")                                                               #stream defined
+        outStreamLink = StreamLink(str,fdr) ; outStreamLink.save(strlnk)
+        Catchment = Watershed(fdr, strlnk); Catchment.save("catchment")             # no need catchment, mask is good
+        StreamToFeature(strlnk, fdr, "Streamnet","NO_SIMPLIFY")                     # stream defined
         arcpy.RasterToPolygon_conversion("catchment", "CatchTemp", "NO_SIMPLIFY")
-        arcpy.Dissolve_management("catchtemp", "CatchPoly", "GRIDCODE")                                                            #dissolves extra catchments
+        arcpy.Dissolve_management("catchtemp", "CatchPoly", "GRIDCODE")             # dissolves extra catchments
         arcpy.Dissolve_management(in_features="catchtemp", out_feature_class="CatchPoly.shp", dissolve_field="GRIDCODE", statistics_fields="", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
     except Exception, e:
-        print e
+        arcpy.AddMessage("FAILURE: "+ e)
 
 
-    arcpy.AddMessage("********** Fdr, Fac, Stream processing complete **********")
+    arcpy.AddMessage("SUCCESS: Fdr, Fac, Stream processing complete ")
 
     #clip to the mask--------------------------------------------------------
     arcpy.gp.ExtractByMask_sa(str, mask, str+"_c")
@@ -141,35 +144,31 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
 
     #strahler for mannings for channel
     arcpy.gp.StreamOrder_sa(str, fdr, STRAHLER, "STRAHLER")  # the last parameter, Strahler string, is actually a method of ordering stream. NOT A NAME
-    arcpy.AddMessage("********** Strahler stream order processing complete **********")
+    arcpy.AddMessage("SUCCESS: Strahler stream order processing complete")
 
     arcpy.AddField_management(in_table= land_use , field_name="ManningsN", field_type="LONG",field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
-    arcpy.AddMessage("********** Adding field to Land Use complete **********")
+    arcpy.AddMessage("SUCCESS: Adding field to Land Use complete")
 
-
-    # reclassification, as above, did not work. so, multiply Manning's n by 10,000. We will later divide it by 10,000 again
+    # multiply Manning's n by 10,000. We will later divide it by 10,000 again
     arcpy.gp.Reclassify_sa(land_use, "Value", "11 0;21 404;22 678;23 678;24 404;31 113;41 3600;42 3200;43 4000;52 4000;71 3680;81 3250;82 3250;90 860;95 1825", outDir+"/nx10000_Overl", "DATA")
-    arcpy.AddMessage("********** Land Use reclassification to obtain Mannings n complete **********")
+    arcpy.AddMessage("SUCCESS: Land Use reclassification to obtain Mannings n complete ")
 
     # reclassifying Strahler order to get Manning's for channel in the same way
     arcpy.gp.Reclassify_sa("STRAHLER", "Value", "1 500;2 400;3 350;4 300;5 300;6 250", outDir+"/nx10000_Chan", "DATA")
-    arcpy.AddMessage("********** Strahler order raster reclassification to obtain Mannings n complete **********")
+    arcpy.AddMessage("SUCCESS: Strahler order raster reclassification to obtain Mannings n complete **********")
 
     # now, NLCD to n calculate the real Manning's, divide reclassified raster by 10,000
     arcpy.gp.RasterCalculator_sa(""""nx10000_Overl" /10000.0""", outDir+"/n_Overland")
     arcpy.gp.RasterCalculator_sa(""""nx10000_Chan" /10000.0""", outDir+"/n_Channel")
 
-    arcpy.AddMessage("########## DEM processing complete ##########")
+    arcpy.AddMessage("SUCCESS: All of DEM processing complete ")
 
-
-
-    #REclassify to change no data to -9999
+    # Reclassify to change no data to -9999
     arcpy.gp.Reclassify_sa(fdr, "Value", "1 1;2 2;4 4;8 8;16 16;32 32;64 64;128 128;NODATA -9999", fdr+"_r", "DATA")
     arcpy.gp.Reclassify_sa(str, "Value", "0 0;1 1;NODATA -9999", str + "_r", "DATA")
     arcpy.gp.Reclassify_sa(mask, "Value", "2 1", mask + "_r", "DATA")
-    # arcpy.gp.RasterCalculator_sa(""""mask_c"+.5""", SD)                                                    #creating soil depth raster, len = 1.5
-    arcpy.AddMessage("########## Assigning -9999 to NoData, mask and Soil depth creation  completed ##########")
 
+    arcpy.AddMessage("SUCCESS: Assigning -9999 to NoData, mask and Soil depth creation  completed")
 
     # after reclassifying
     str = str +"_r"
