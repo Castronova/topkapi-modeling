@@ -41,7 +41,8 @@ def step1_get_dem_landuse(inUsername,inPassword,outGDB,wshedBoundary,bufferDi,ce
             bufferDi = float(cell_size) * 3
 
     # Set workspace environment
-    arcpy.env.workspace  = outGDB   # = arcpy.env.scratchWorkspace
+    arcpy.env.workspace  = arcpy.env.scratchWorkspace = outGDB   # = arcpy.env.scratchWorkspace
+    arcpy.env.overwriteOutput = True
 
     # If no projection defined, assume the area is in Northen Utah, i.e. UTM 12N
     if projection_file == "":
@@ -49,49 +50,59 @@ def step1_get_dem_landuse(inUsername,inPassword,outGDB,wshedBoundary,bufferDi,ce
     arcpy.env.outputCoordinateSystem = projection_file
     arcpy.env.overwriteOutput = True
 
+    arcpy.FeatureClassToFeatureClass_conversion(wshedBoundary, outGDB, "Boundary")
+    arcpy.MakeFeatureLayer_management("Boundary", "Boundary")
 
+    # Buffer
+    arcpy.Buffer_analysis("Boundary", "Buffer", "500 Feet", "FULL", "ROUND", "NONE", "", "PLANAR")
 
-    # # Add Data to Geodatabase
-    # arcpy.FeatureClassToFeatureClass_conversion(wshedBoundary, outGDB, "Boundary")  # to convert feature to feature class (as contained in geodatabase)
-    # arcpy.MakeFeatureLayer_management("Boundary", "Boundary")                         # creates temporary layer
+    # Connect to ArcGIS Servers
+    out_folder_path = 'GIS Servers'
 
-    # # Buffer
-    # arcpy.Buffer_analysis(wshedBoundary, "Buffer", str(bufferDi)+" Meters", "FULL", "ROUND", "NONE", "", "PLANAR")
-    # arcpy.MakeFeatureLayer_management("Buffer", "Buffer")                        #creates temporary layer
+    out_landscape = 'Landscape.ags'
+    server_landscape = 'https://landscape5.arcgis.com:443/arcgis/services/'
 
+    out_elevation = 'Elevation.ags'
+    server_elevation = 'https://elevation.arcgis.com:443/arcgis/services/'
 
     arcpy.mapping.CreateGISServerConnectionFile("USE_GIS_SERVICES",
-                                                    'GIS Servers',
-                                                    'Landscape.ags',
-                                                    'https://landscape5.arcgis.com:443/arcgis/services/',
+                                                    out_folder_path,
+                                                    out_landscape,
+                                                    server_landscape,
                                                     "ARCGIS_SERVER",
                                                     username=inUsername,
                                                     password=inPassword,
                                                     save_username_password=True)
 
     arcpy.mapping.CreateGISServerConnectionFile("USE_GIS_SERVICES",
-                                                    'GIS Servers',
-                                                    'Elevation.ags',
-                                                    'https://elevation.arcgis.com:443/arcgis/services/',
+                                                    out_folder_path,
+                                                    out_elevation,
+                                                    server_elevation,
                                                     "ARCGIS_SERVER",
                                                     username=inUsername,
                                                     password=inPassword,
                                                     save_username_password=True)
-
 
     # Extract Image Server Data
-    """ DEM, 30m NED """
-    NED30m_ImageServer = "GIS Servers\\Elevation\\NED30m.ImageServer"
-    arcpy.MakeImageServerLayer_management(NED30m_ImageServer, "NED30m_Layer")
-    arcpy.gp.ExtractByMask_sa("NED30m_Layer", wshedBoundary, os.path.join(outGDB,"DEM"))      # "Buffer" replaced by wshedBoundary
-
-    arcpy.env.snapRaster = "DEM"                                              # Set Snap Raster environment
-
     """ Land Use """
     NLCD_ImageServer = "GIS Servers\\Landscape\\USA_NLCD_2011.ImageServer"
     arcpy.MakeImageServerLayer_management(NLCD_ImageServer,"NLCD_Layer")
-    arcpy.gp.ExtractByMask_sa("NLCD_Layer", "DEM", os.path.join(outGDB,"Land_Use"))
+    arcpy.gp.ExtractByMask_sa("NLCD_Layer", "Buffer", "Land_Use")
 
+    """ Percent Impervious """
+    Imp_ImageServer = "GIS Servers\\Landscape\\USA_NLCD_Impervious_2011.ImageServer"
+    arcpy.MakeImageServerLayer_management(Imp_ImageServer, "Impervious_Layer")
+    arcpy.gp.ExtractByMask_sa("Impervious_Layer", "Buffer", "Impervious")
+
+    """ Soils HSG, USDA """
+    Soils_ImageServer = "GIS Servers\\Landscape\\USA_Soils_Hydrologic_Group.ImageServer"
+    arcpy.MakeImageServerLayer_management(Soils_ImageServer, "Soils_Layer")
+    arcpy.gp.ExtractByMask_sa("Soils_Layer", "Buffer", "SoilsHSG")
+
+    """ DEM, 30m NED """
+    NED30m_ImageServer = "GIS Servers\\Elevation\\NED30m.ImageServer"
+    arcpy.MakeImageServerLayer_management(NED30m_ImageServer, "NED30m_Layer")
+    arcpy.gp.ExtractByMask_sa("NED30m_Layer", "Buffer", "DEM")
     arcpy.AddMessage("DEM and Land Use data, i.e. NLCD , download complete")
 
     # Project the rasters
