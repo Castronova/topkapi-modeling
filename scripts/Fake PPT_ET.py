@@ -7,20 +7,22 @@ path = "../simulations/TEST SIMULAITON5/run_the_model/forcing_variables"
 rainfall_outputFile = os.path.join(path, "rainfields_RBC.h5")
 ET_outputFile = os.path.join(path, "ET_RBC.h5")
 
-time_step = 161
+time_step = 20 #161
 no_of_cell = 19665
+rainfall_intensity_perUnitTime = 3  #mm
 
 with h5py.File(rainfall_outputFile,'w') as f2:
     f2.create_group('sample_event')
     f2['sample_event'].create_dataset('rainfall', shape=(time_step, no_of_cell), dtype='f' )
 
     rainArray =  f2['sample_event']['rainfall']
-    data = []
+    data = numpy.zeros((time_step , no_of_cell))
     for i in range(time_step):
-        one_time_ppt_all_cell = numpy.random.rand(no_of_cell,1)*100
-        data.append(one_time_ppt_all_cell)
+        a = numpy.empty( (1,no_of_cell ) )
+        a.fill(rainfall_intensity_perUnitTime)  #
+        data[i,:] = a
 
-    rainArray = data
+    rainArray[:] = data
 
 
 
@@ -32,16 +34,30 @@ with h5py.File(ET_outputFile,'w' ) as f1:
     EToArray =  f1['sample_event']['ETo']
     ETrArray =  f1['sample_event']['ETr']
 
-    data = []
+    data = numpy.zeros((time_step , no_of_cell))
     for i in range(time_step):
-        one_time_ppt_all_cell = numpy.random.rand(no_of_cell,1)*0.1
-        data.append(one_time_ppt_all_cell)
+        data[i,:] = numpy.random.rand(1,no_of_cell)*0.
 
     EToArray = data
     ETrArray = data
 
 
+# Read and write Below
+# with h5py.File(ET_outputFile,'w' ) as f1:
+#     f1.create_group('sample_event')
+#     f1['sample_event'].create_dataset('ETo', shape=( time_step, no_of_cell), dtype='f' )
+#     f1['sample_event'].create_dataset('ETr', shape=( time_step, no_of_cell), dtype='f' )
 #
+#     EToArray =  f1['sample_event']['ETo']
+#     ETrArray =  f1['sample_event']['ETr']
+#
+#     data = []
+#     for i in range(time_step):
+#         one_time_ppt_all_cell = numpy.random.rand(no_of_cell,1)*0.1
+#         data.append(one_time_ppt_all_cell)
+#
+#     EToArray = data
+#     ETrArray = data
 #
 # #reading usmmary
 # et_h5 = h5py.File("ET.h5" , "r")
