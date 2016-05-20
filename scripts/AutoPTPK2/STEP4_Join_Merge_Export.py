@@ -1,6 +1,5 @@
 import os
 import arcpy
-from arcpy import env
 
 path2_ssurgo = arcpy.GetParameterAsText(0)
 path2statsgo = arcpy.GetParameterAsText(1) # make it optional
