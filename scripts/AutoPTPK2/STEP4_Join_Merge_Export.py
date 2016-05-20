@@ -9,7 +9,7 @@ MaskRaster = arcpy.GetParameterAsText(3)
 
 
 
-def STEP5_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
+def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
 
     arcpy.AddMessage("*** This scripts joins the soil values to mushape, and exports as Rasters *** ")
 
@@ -181,5 +181,5 @@ def STEP5_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
     export(erase_statsgo_and_merge(), soilProperties, MaskRaster )
 
 if __name__ == "__main__":
-    STEP5_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir, MaskRaster )
+    STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir, MaskRaster )
 
