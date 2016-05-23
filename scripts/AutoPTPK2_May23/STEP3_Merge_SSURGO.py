@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 # Input a folder that has all the folders of names similar to  UT012, Ut027 etc.
-path2collectionOfssurgoFolders = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders\statsgo_utah"
+path2collectionOfssurgoFolders = r"E:\Research Data\00 Red Butte Creek\Soil Folders\SSURGO_Folders"
 lookupTable = os.path.join(os.getcwd(), "GREENAMPT_LOOKUPTABLE.csv")    #have not tested though
 # lookupTable = r"C:\Users\Prasanna\Google Drive\RESEARCH\AutoPTPK2\GREENAMPT_LOOKUPTABLE.csv"
 
@@ -29,7 +29,7 @@ def step3_merge_ssurgo(path2collectionOfssurgoFolders ,path2lookupTable=lookupTa
         valuesToAvg = ['ksat_r','Ks','dbthirdbar_r','dbfifteenbar_r', 'ResidualWaterContent', 'Porosity',
                         'EffectivePorosity', 'BubblingPressure_Geometric', 'PoreSizeDistribution_geometric']
 
-        # fileNameColNoListHeaders [ [filename, [column numbers for fields to pull up], [names for those field/col]],..]
+        # fileNameColNoListHeaders [ [filename, [column numbers for fields to pull up], [col headers to be assigned]], ]
         # the number start from 0, so 1 is actually the second column/field
         fileNameColNoListHeaders = [ ["comp",[1,5,107,108],["ComponentPercent","MajorComponent", "MUKEY","COKEY"]],
                                      ["muaggatt",[10,17,39],["AvaWaterCon","HydroGrp","MUKEY"]],
@@ -131,11 +131,11 @@ def step3_merge_ssurgo(path2collectionOfssurgoFolders ,path2lookupTable=lookupTa
                 print path2tabular+"\\MUKEY-"+ valueName  +".csv"
                 lastValueFile = pd.merge(lastValueFile, fl, on="MUKEY")
 
-            # print mukeyValuesAllMerged
+            # Print mukeyValuesAllMerged
             lastValueFile.to_csv(path2ssurgo+"\\MUKEY-Vs-Values.csv", index=False)
             print 'All values table written down in the ssurgo folder'
 
-            # create a schema.ini so that arcGIS can understand the MUKEY field
+            # Create a schema.ini so that arcGIS can understand the MUKEY field
             schema = open(path2ssurgo+"\\schema.ini", "w")
             schema.write("[MUKEY-Vs-Values.csv]"+ "\n" + "Col2=MUKEY Text")  #may not always be column 1 though
             schema.close()

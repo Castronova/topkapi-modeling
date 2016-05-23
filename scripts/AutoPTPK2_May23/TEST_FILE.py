@@ -1,44 +1,12 @@
-# import arcpy
-# from arcpy.sa import *
-# import os
-# from arcpy import env
-#
-# arcpy.env.overwriteOutput = True
-# arcpy.CheckOutExtension("Spatial")
-#
-# arcpy.env.workspace = arcpy.env.scratchWorkspace = r"C:\Users\WIN10-HOME\Documents\ArcGIS\Default.gdb"
-#
-# inputfc = r"E:\Research Data\00 Red Butte Creek\RBC_3\SSURGO_Folders\UT612\spatial\soilmu_a_ut612.shp"
-# outputfc = os.path.join(arcpy.env.workspace ,"out2.shp")
-# fieldname = "MUKEY"
-# fieldvalue = 613806
+import arcpy
+import os
+
+arcpy.env.overwriteOutput = True
+arcpy.CheckOutExtension("Spatial")
+
+inputfc = r"E:\Research Data\00 Red Butte Creek\RBC_3\SSURGO_Folders\UT612\spatial\soilmu_a_ut612.shp"
 
 
-# One thing that makes writing WHERE clauses a lot easier is to use the AddFieldDelimiters function,
-# which automatically adds the correct, DBMS-specific delimiters for field identifiers, such as double-quotes
-# for FGDB and brackets for PGDB.
-# The other thing you have to consider is whether the value is a number, string, or other data type. Specifically,
-# strings are wrapped in single quotes while numbers are not. You could check the field type and add single
-# quotes if it is a string field.
-
-def buildWhereClause(table, field, value):
-    """Constructs a SQL WHERE clause to select rows having the specified value
-    within a given field and table."""
-
-    # Add DBMS-specific field delimiters
-    fieldDelimited = arcpy.AddFieldDelimiters(table, field)
-
-    # Determine field type
-    fieldType = arcpy.ListFields(table, field)[0].type
-
-    # Add single-quotes for string field values
-    if str(fieldType) == 'String':
-        value = "'%s'" % value
-
-    # Format WHERE clause
-    whereClause = "%s = %s" % (fieldDelimited, value)
-    arcpy.AddMessage(whereClause)
-    return whereClause
 
 if __name__ == "__main__":
     reclassifying_field = "Value"
@@ -46,7 +14,6 @@ if __name__ == "__main__":
 
     landuse_n_file = open(landuse_n_file_path, "r")
     landuse_n_file_temp = open("landuse_n_temp.txt" , "w")
-
 
     for line in landuse_n_file.readlines():
         value = line.split(":")[-1].split("\n")[0]

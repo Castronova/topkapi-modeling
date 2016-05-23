@@ -15,6 +15,7 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
     if not os.path.exists(outDir+"/TEMP"):
         os.mkdir(outDir+"/TEMP")
     TEMP = os.path.join(outDir, "TEMP")
+
     # soilProperties =[ [name from csv, new name for raster, field name defaulted by ArcGIS],.....
     soilProperties = [["ksat_r_WtAvg", "KSAT-s", "MUKEY_Vs_2" ],
                    ["Ks_WtAvg", "KSAT-t", "MUKEY_Vs_3" ],
@@ -43,9 +44,6 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
         :return:
         """
 
-        mxd = arcpy.mapping.MapDocument("CURRENT")                                  # get the map document
-        df = arcpy.mapping.ListDataFrames(mxd,"*")[0]                               #first dataframe in the document
-
         # create a list of folders containing SSURGO folders only
         folderList = []
         [folderList.append(folders) for folders in os.listdir(path2statsgo_or_ssurgo)
@@ -57,9 +55,9 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
             path2_soilFolder= os.path.join(path2statsgo_or_ssurgo, folder)
             path2tabular = os.path.join(path2_soilFolder, "tabular")
             path2Spatial= os.path.join(path2_soilFolder,"spatial")
-            # arcpy.env.workspace =  path2_soilFolder   # arcpy.env.scratchWorkspace =
 
-            muShapefile = os.listdir(path2Spatial)[1].split('.')[0]                     # muShapefile = 'soilmu_a_ut612'
+
+            muShapefile = os.listdir(path2Spatial)[1].split('.')[0]                    # muShapefile = 'soilmu_a_ut612'
 
             # project the shapefile in ssurgo table, FILE SELECTION
             if dataType.lower() == "statsgo":
@@ -79,7 +77,7 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
             muShapefileAsLayer = new_mu
 
             layer1 = arcpy.mapping.Layer(TEMP + "/"+ muShapefileAsLayer+ ".shp" ) # create a new layer
-            arcpy.mapping.AddLayer(df, layer1,"TOP")             #added to layer because this will be used code below
+            arcpy.mapping.AddLayer(df, layer1,"TOP")             # added to layer because this will be used code below
 
             try:
                 # join the table that had mUKEY mapped to all soil properties

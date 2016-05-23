@@ -1,15 +1,16 @@
 import os
 import arcpy
-from arcpy import env
 
 path2_ssurgo = arcpy.GetParameterAsText(0)
 path2statsgo = arcpy.GetParameterAsText(1) # make it optional
-TEMP = arcpy.GetParameterAsText(2)
+outDir = arcpy.GetParameterAsText(2)
 MaskRaster = arcpy.GetParameterAsText(3)  
 
 
 
-def STEP5_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
+def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
+
+    arcpy.AddMessage("*** This scripts joins the soil values to mushape, and exports as Rasters *** ")
 
     if not os.path.exists(outDir+"/TEMP"):
         os.mkdir(outDir+"/TEMP")
@@ -35,12 +36,12 @@ def STEP5_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
 
     # for each ssurgo or statsgo folders, navigates to sub-folders, adds join and adds to mxd as a layer
     def join_field( path2statsgo_or_ssurgo, MaskRaster, dataType ):
-        '''
+        """
         :param path2_soilFolderFolders: The path to a folder containing the collection of SSURGO (or Statsgo) folders
         :param MaskRaster: DEM or any raster whose extent, coordinate system are considered while creating SSURGO rasters
+        :param dataType: string, "statsgo" or "ssurgo"
         :return:
-        '''
-        arcpy.AddMessage("****This script joins ssurgo derived data****")
+        """
 
         mxd = arcpy.mapping.MapDocument("CURRENT")                                  # get the map document
         df = arcpy.mapping.ListDataFrames(mxd,"*")[0]                               #first dataframe in the document
@@ -95,6 +96,8 @@ def STEP5_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
         statsgo_layers = [lyr.name for lyr in layers if lyr.name.endswith("_statsgo_prj")]
         ssurgo_layers = [lyr.name for lyr in layers if lyr.name.endswith("_ssurgo_prj")]
 
+        arcpy.AddMessage("MERGING ")
+
         arcpy.Merge_management(inputs= ";".join(ssurgo_layers),
                            output=os.path.join(TEMP,"ssurgo_merged") ,
                            field_mappings="""AREASYMBOL "AREASYMBOL" true true false 20 Text 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,gsmsoilmu_a_id_statsgo_prj.AREASYMBOL,-1,-1;SPATIALVER "SPATIALVER" true true false 10 Long 0 10 ,First,#,gsmsoilmu_a_id_statsgo_prj,gsmsoilmu_a_id_statsgo_prj.SPATIALVER,-1,-1;MUSYM "MUSYM" true true false 6 Text 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,gsmsoilmu_a_id_statsgo_prj.MUSYM,-1,-1;MUKEY "MUKEY" true true false 30 Text 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,gsmsoilmu_a_id_statsgo_prj.MUKEY,-1,-1;MUKEY_Vs_Values_csv_PoreSizeDistribution_geometric_WtAvg_x "MUKEY_Vs_Values_csv_PoreSizeDistribution_geometric_WtAvg_x" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.PoreSizeDistribution_geometric_WtAvg_x,-1,-1;MUKEY_Vs_Values_csv_MUKEY "MUKEY_Vs_Values_csv_MUKEY" true true false 8000 Text 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.MUKEY,-1,-1;MUKEY_Vs_Values_csv_ksat_r_WtAvg "MUKEY_Vs_Values_csv_ksat_r_WtAvg" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.ksat_r_WtAvg,-1,-1;MUKEY_Vs_Values_csv_Ks_WtAvg "MUKEY_Vs_Values_csv_Ks_WtAvg" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.Ks_WtAvg,-1,-1;MUKEY_Vs_Values_csv_dbthirdbar_r_WtAvg "MUKEY_Vs_Values_csv_dbthirdbar_r_WtAvg" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.dbthirdbar_r_WtAvg,-1,-1;MUKEY_Vs_Values_csv_dbfifteenbar_r_WtAvg "MUKEY_Vs_Values_csv_dbfifteenbar_r_WtAvg" true true false 8000 Text 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.dbfifteenbar_r_WtAvg,-1,-1;MUKEY_Vs_Values_csv_ResidualWaterContent_WtAvg "MUKEY_Vs_Values_csv_ResidualWaterContent_WtAvg" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.ResidualWaterContent_WtAvg,-1,-1;MUKEY_Vs_Values_csv_Porosity_WtAvg "MUKEY_Vs_Values_csv_Porosity_WtAvg" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.Porosity_WtAvg,-1,-1;MUKEY_Vs_Values_csv_EffectivePorosity_WtAvg "MUKEY_Vs_Values_csv_EffectivePorosity_WtAvg" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.EffectivePorosity_WtAvg,-1,-1;MUKEY_Vs_Values_csv_BubblingPressure_Geometric_WtAvg "MUKEY_Vs_Values_csv_BubblingPressure_Geometric_WtAvg" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.BubblingPressure_Geometric_WtAvg,-1,-1;MUKEY_Vs_Values_csv_PoreSizeDistribution_geometric_WtAvg_y "MUKEY_Vs_Values_csv_PoreSizeDistribution_geometric_WtAvg_y" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_id_statsgo_prj,MUKEY-Vs-Values.csv.PoreSizeDistribution_geometric_WtAvg_y,-1,-1;AREASYMBOL_1 "AREASYMBOL_1" true true false 20 Text 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,gsmsoilmu_a_ut_statsgo_prj.AREASYMBOL,-1,-1;SPATIALVER_1 "SPATIALVER_1" true true false 10 Long 0 10 ,First,#,gsmsoilmu_a_ut_statsgo_prj,gsmsoilmu_a_ut_statsgo_prj.SPATIALVER,-1,-1;MUSYM_1 "MUSYM_1" true true false 6 Text 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,gsmsoilmu_a_ut_statsgo_prj.MUSYM,-1,-1;MUKEY_1 "MUKEY_1" true true false 30 Text 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,gsmsoilmu_a_ut_statsgo_prj.MUKEY,-1,-1;MUKEY_Vs_Values_csv_PoreSizeDistribution_geometric_WtAvg_x_1 "MUKEY_Vs_Values_csv_PoreSizeDistribution_geometric_WtAvg_x_1" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.PoreSizeDistribution_geometric_WtAvg_x,-1,-1;MUKEY_Vs_Values_csv_MUKEY_1 "MUKEY_Vs_Values_csv_MUKEY_1" true true false 8000 Text 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.MUKEY,-1,-1;MUKEY_Vs_Values_csv_ksat_r_WtAvg_1 "MUKEY_Vs_Values_csv_ksat_r_WtAvg_1" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.ksat_r_WtAvg,-1,-1;MUKEY_Vs_Values_csv_Ks_WtAvg_1 "MUKEY_Vs_Values_csv_Ks_WtAvg_1" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.Ks_WtAvg,-1,-1;MUKEY_Vs_Values_csv_dbthirdbar_r_WtAvg_1 "MUKEY_Vs_Values_csv_dbthirdbar_r_WtAvg_1" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.dbthirdbar_r_WtAvg,-1,-1;MUKEY_Vs_Values_csv_dbfifteenbar_r_WtAvg_1 "MUKEY_Vs_Values_csv_dbfifteenbar_r_WtAvg_1" true true false 8000 Text 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.dbfifteenbar_r_WtAvg,-1,-1;MUKEY_Vs_Values_csv_ResidualWaterContent_WtAvg_1 "MUKEY_Vs_Values_csv_ResidualWaterContent_WtAvg_1" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.ResidualWaterContent_WtAvg,-1,-1;MUKEY_Vs_Values_csv_Porosity_WtAvg_1 "MUKEY_Vs_Values_csv_Porosity_WtAvg_1" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.Porosity_WtAvg,-1,-1;MUKEY_Vs_Values_csv_EffectivePorosity_WtAvg_1 "MUKEY_Vs_Values_csv_EffectivePorosity_WtAvg_1" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.EffectivePorosity_WtAvg,-1,-1;MUKEY_Vs_Values_csv_BubblingPressure_Geometric_WtAvg_1 "MUKEY_Vs_Values_csv_BubblingPressure_Geometric_WtAvg_1" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.BubblingPressure_Geometric_WtAvg,-1,-1;MUKEY_Vs_Values_csv_PoreSizeDistribution_geometric_WtAvg_y_1 "MUKEY_Vs_Values_csv_PoreSizeDistribution_geometric_WtAvg_y_1" true true false 8 Double 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.PoreSizeDistribution_geometric_WtAvg_y,-1,-1;MUKEY_Vs_Values_csv_AvaWaterCon "MUKEY_Vs_Values_csv_AvaWaterCon" true true false 4 Long 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.AvaWaterCon,-1,-1;MUKEY_Vs_Values_csv_HydroGrp "MUKEY_Vs_Values_csv_HydroGrp" true true false 8000 Text 0 0 ,First,#,gsmsoilmu_a_ut_statsgo_prj,MUKEY-Vs-Values.csv.HydroGrp,-1,-1""")
@@ -110,6 +113,8 @@ def STEP5_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
         arcpy.Clip_analysis(in_features=os.path.join(TEMP,"statgo_merged.shp"),
                             clip_features=os.path.join(TEMP,"mask_polygon.shp"),
                             out_feature_class=os.path.join(TEMP,"Project_statsgo_merged"), cluster_tolerance="")
+
+        arcpy.AddMessage("SUCCESS: SSURGO and STATSGO for the area merged")
         return
 
     def erase_statsgo_and_merge():
@@ -132,18 +137,17 @@ def STEP5_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
                                    output=os.path.join(TEMP,"Project_ssurgo_statsgo_merge"),
                                    field_mappings="""AREASYMBOL "AREASYMBOL" true true false 20 Text 0 0 ,First,#,Project_statsgo_merged_Erase,AREASYMBOL,-1,-1,Project_ssurgo_merged,AREASYMBOL,-1,-1;SPATIALVER "SPATIALVER" true true false 4 Long 0 0 ,First,#,Project_statsgo_merged_Erase,SPATIALVER,-1,-1,Project_ssurgo_merged,SPATIALVER,-1,-1;MUSYM "MUSYM" true true false 6 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUSYM,-1,-1,Project_ssurgo_merged,MUSYM,-1,-1;MUKEY "MUKEY" true true false 30 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY,-1,-1,Project_ssurgo_merged,MUKEY,-1,-1;MUKEY_Vs_V "MUKEY_Vs_V" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_V,-1,-1,Project_ssurgo_merged,MUKEY_Vs_V,-1,-1;MUKEY_Vs_1 "MUKEY_Vs_1" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_1,-1,-1,Project_ssurgo_merged,MUKEY_Vs_1,-1,-1;MUKEY_Vs_2 "MUKEY_Vs_2" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_2,-1,-1,Project_ssurgo_merged,MUKEY_Vs_2,-1,-1;MUKEY_Vs_3 "MUKEY_Vs_3" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_3,-1,-1,Project_ssurgo_merged,MUKEY_Vs_3,-1,-1;MUKEY_Vs_4 "MUKEY_Vs_4" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_4,-1,-1,Project_ssurgo_merged,MUKEY_Vs_4,-1,-1;MUKEY_Vs_5 "MUKEY_Vs_5" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_5,-1,-1,Project_ssurgo_merged,MUKEY_Vs_5,-1,-1;MUKEY_Vs_6 "MUKEY_Vs_6" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_6,-1,-1,Project_ssurgo_merged,MUKEY_Vs_6,-1,-1;MUKEY_Vs_7 "MUKEY_Vs_7" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_7,-1,-1,Project_ssurgo_merged,MUKEY_Vs_7,-1,-1;MUKEY_Vs_8 "MUKEY_Vs_8" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_8,-1,-1,Project_ssurgo_merged,MUKEY_Vs_8,-1,-1;MUKEY_Vs_9 "MUKEY_Vs_9" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_9,-1,-1,Project_ssurgo_merged,MUKEY_Vs_9,-1,-1;MUKEY_V_10 "MUKEY_V_10" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_10,-1,-1,Project_ssurgo_merged,MUKEY_V_10,-1,-1;AREASYMB_1 "AREASYMB_1" true true false 20 Text 0 0 ,First,#,Project_statsgo_merged_Erase,AREASYMB_1,-1,-1;SPATIALV_1 "SPATIALV_1" true true false 4 Long 0 0 ,First,#,Project_statsgo_merged_Erase,SPATIALV_1,-1,-1;MUSYM_1 "MUSYM_1" true true false 6 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUSYM_1,-1,-1;MUKEY_1 "MUKEY_1" true true false 30 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_1,-1,-1;MUKEY_V_11 "MUKEY_V_11" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_11,-1,-1,Project_ssurgo_merged,MUKEY_V_11,-1,-1;MUKEY_V_12 "MUKEY_V_12" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_12,-1,-1,Project_ssurgo_merged,MUKEY_V_12,-1,-1;MUKEY_V_13 "MUKEY_V_13" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_13,-1,-1;MUKEY_V_14 "MUKEY_V_14" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_14,-1,-1;MUKEY_V_15 "MUKEY_V_15" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_15,-1,-1;MUKEY_V_16 "MUKEY_V_16" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_16,-1,-1;MUKEY_V_17 "MUKEY_V_17" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_17,-1,-1;MUKEY_V_18 "MUKEY_V_18" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_18,-1,-1;MUKEY_V_19 "MUKEY_V_19" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_19,-1,-1;MUKEY_V_20 "MUKEY_V_20" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_20,-1,-1;MUKEY_V_21 "MUKEY_V_21" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_21,-1,-1;MUKEY_V_22 "MUKEY_V_22" true true false 4 Long 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_22,-1,-1;MUKEY_V_23 "MUKEY_V_23" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_23,-1,-1;Shape_Length "Shape_Length" false true true 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,Shape_Length,-1,-1;Shape_Area "Shape_Area" false true true 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,Shape_Area,-1,-1""")
             arcpy.AddMessage("SUCCESS: Erasing NULL SSURGO records and Merging STATSGO to SSURGO")
+
+            merged_layer = arcpy.mapping.Layer(os.path.join(TEMP,"Project_ssurgo_statsgo_merge.shp") )                 # create a new layer
+            arcpy.mapping.AddLayer(df, merged_layer ,"TOP")
         except Exception,e:
-            arcpy.AddMessage(e)
+            arcpy.AddMessage("FAILED: Erasing NULL SSURGO records and Merging STATSGO to SSURGO")
         return os.path.join(TEMP,"Project_ssurgo_statsgo_merge")
 
     def export(project_ssurgo_statsgo, soilProperties, MaskRaster, TEMP= TEMP, outDir= outDir ):
         arcpy.env.snapRaster = MaskRaster                                          # Set Snap Raster environment
 
         project_ssurgo_statsgo = project_ssurgo_statsgo+".shp"
-
-        # have the prepared project statsgo and ssurgo merged shapefile loaded as a layer
-        #layer = arcpy.mapping.Layer(project_ssurgo_statsgo+ ".shp" ) # create a new layer
-        #arcpy.mapping.AddLayer(df, layer,"TOP")             #added to layer because this will be used code below
 
         # soilProperties = [[ "ksat_r_WtAvg", "Ksat-s_UT612" ], ["Ks_WtAvg", "Ksat-t_ut612" ], .... ]
         for a_soil_property in soilProperties:
@@ -162,15 +166,19 @@ def STEP5_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
                   out_raster= outRaster+"c" , in_template_dataset=MaskRaster, nodata_value="-9999",
                   clipping_geometry="NONE", maintain_clipping_extent="MAINTAIN_EXTENT")
             arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(outRaster+"c"), Output_Workspace=outDir, Raster_Format="TIFF")
-            
+            arcpy.AddMessage("SUCCESS: TIF representing %s values saved in %s"%(soil_property_name, outDir))
+
+            # load the TIF to arcmap
+            tif_layer = arcpy.mapping.Layer(os.path.join(outDir, soil_property_name+"c.tif") )                 # create a new layer
+            arcpy.mapping.AddLayer(df, tif_layer ,"TOP")
     # __main__
     join_field( path2_ssurgo, MaskRaster,"ssurgo")
     if path2statsgo != "":
         join_field( path2statsgo, MaskRaster, "statsgo" )
     merge_and_clip(TEMP)
-    # erase_statsgo_and_merge()  #(os.path.join(TEMP,"Project_ssurgo_merged.shp"), os.path.join(TEMP,"Project_statsgo_merged.shp"))
+    erase_statsgo_and_merge()
     export(erase_statsgo_and_merge(), soilProperties, MaskRaster )
 
 if __name__ == "__main__":
-    STEP5_Merge_Export (path2_ssurgo, path2statsgo, TEMP,MaskRaster )
+    STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir, MaskRaster )
 

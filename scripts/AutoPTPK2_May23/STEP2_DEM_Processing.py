@@ -47,11 +47,12 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
 
     # Un tested
     if threshold == "": # threshold = "3000"
-        area_threshold = 5 #km2
+        area_threshold = 1 #km2
         threshold = int (area_threshold / ( (arcpy.Describe(DEM).children[0].meanCellHeight)/1000. )**2)
 
     # Set workspace environment
     arcpy.env.workspace = arcpy.env.scratchWorkspace = outDir
+    # arcpy.env.outputCoordinateSystem = arcpy.SpatialReference("WGS 1984 UTM Zone 12N")
     arcpy.env.snapRaster = DEM              # Set Snap Raster environment
     arcpy.env.overwriteOutput = True
 
@@ -60,8 +61,9 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     FlowDirection("fel").save('fdr')
     FlowAccumulation('fdr').save('fac')
     Slope("fel", "DEGREE", "1").save('slope')
+    #arcpy.gp.Slope_sa(fill, slope, "DEGREE", "1")
     FlowDirection("fel", "NORMAL",'slope').save('fdr')
-    SnapPourPoint(outlet_point_sf, 'fac', 3* arcpy.Describe(DEM).children[0].meanCellHeight,"").save("Outlet")
+    SnapPourPoint(outlet_point_sf, 'fac', 100,"").save("Outlet") # 3* arcpy.Describe(DEM).children[0].meanCellHeight
     Watershed('fdr', "Outlet").save("mask")
     StreamRaster = (Raster('fac') >= float(threshold)) & (Raster("mask") >= 0) ; StreamRaster.save('str')
 
@@ -126,12 +128,10 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     arcpy.AddMessage("SUCCESS: Assigning -9999 to NoData, mask and Soil depth creation  completed")
 
 
-
+    # Add n_Channel and n_Overland to layer and then to map document
+    mxd = arcpy.mapping.MapDocument("CURRENT")                      # get the map document
+    df = arcpy.mapping.ListDataFrames(mxd,"*")[0]                   # first data-frame in the document
     try:
-        # Add n_Channel and n_Overland to layer and then to map document
-        mxd = arcpy.mapping.MapDocument("CURRENT")                      # get the map document
-        df = arcpy.mapping.ListDataFrames(mxd,"*")[0]                   # first data-frame in the document
-
         fdr_layer = arcpy.mapping.Layer(outDir+"/"+ "mask_r")                 # create a new layer
         arcpy.mapping.AddLayer(df, fdr_layer ,"TOP")
 
@@ -155,7 +155,7 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
 
 
     except Exception, e:
-        print(arcpy.GetMessages())
+        print e
 if __name__ == "__main__":
     step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold)
 
