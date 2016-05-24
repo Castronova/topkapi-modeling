@@ -2,14 +2,22 @@ import pandas as pd
 import numpy as np
 import os
 
-# Input a folder that has all the folders of names similar to  UT012, Ut027 etc.
-path2collectionOfssurgoFolders = r"E:\Research Data\00 Red Butte Creek\Soil Folders\SSURGO_Folders"
-lookupTable = os.path.join(os.getcwd(), "GREENAMPT_LOOKUPTABLE.csv")    #have not tested though
-# lookupTable = r"C:\Users\Prasanna\Google Drive\RESEARCH\AutoPTPK2\GREENAMPT_LOOKUPTABLE.csv"
+try:
+    import arcpy
+    path2_ssurgo_or_statsgo = arcpy.GetParameterAsText(0)
+    lookupTable = arcpy.GetParameterAsText(1)             #this should be optional
+except Exception, e:
+    print e
 
-def step3_merge_ssurgo(path2collectionOfssurgoFolders ,path2lookupTable=lookupTable ):
+if path2_ssurgo_or_statsgo == "":
+    # Input a folder that has all the folders of names similar to  UT012, Ut027 etc.
+    path2_ssurgo_or_statsgo = r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
+    lookupTable = os.path.join(os.getcwd(), "GREENAMPT_LOOKUPTABLE.csv")    #have not tested though
+    # lookupTable = r"C:\Users\Prasanna\Google Drive\RESEARCH\AutoPTPK2\GREENAMPT_LOOKUPTABLE.csv"
+    
+def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
     """
-    :param path2collectionOfssurgoFolders: The path to a folder containing the collection of SSURGO (or Statsgo) folders
+    :param path2_ssurgo_or_statsgo: The path to a folder containing the collection of SSURGO (or Statsgo) folders
     :param path2lookupTable: The greenampt csv lookup table that with soil properties for each soil texture classes
     :return: a csv file in each ssurgo folders, that has soil properties calculated for each map units
     """
@@ -17,11 +25,11 @@ def step3_merge_ssurgo(path2collectionOfssurgoFolders ,path2lookupTable=lookupTa
 
     # create a list of folders only
     folderList = []
-    [folderList.append(folders) for folders in os.listdir(path2collectionOfssurgoFolders)
-        if os.path.isdir(os.path.join(path2collectionOfssurgoFolders, folders))]
+    [folderList.append(folders) for folders in os.listdir(path2_ssurgo_or_statsgo)
+        if os.path.isdir(os.path.join(path2_ssurgo_or_statsgo, folders))]
 
     for folder in folderList:
-        path2ssurgo= os.path.join(path2collectionOfssurgoFolders , folder)
+        path2ssurgo= os.path.join(path2_ssurgo_or_statsgo , folder)
         path2tabular = os.path.join(path2ssurgo, "tabular")
         path2Spatial= os.path.join(path2ssurgo, "spatial")
 
@@ -59,11 +67,11 @@ def step3_merge_ssurgo(path2collectionOfssurgoFolders ,path2lookupTable=lookupTa
 
         # Merges the CSV files read earlier
         def STEP2_mergeCSV(path=path2tabular):
-            muaggatt  = pd.read_csv(path+"/muaggatt.csv") ; print "/muaggatt.csv", len(muaggatt.index)
-            component = pd.read_csv(path+"/comp.csv")    ; print "/comp.csv", len(component.index)
-            chorizon = pd.read_csv(path+"/chorizon.csv")  ; print "/chorizon.csv", len(chorizon.index)
-            chtextur = pd.read_csv(path+"/chtextur.csv")  ; print "/chtextur.csv", len(chtextur.index)
-            chtexgrp = pd.read_csv(path+"/chtexgrp.csv")  ; print "/chtexgrp.csv", len(chtexgrp.index)
+            muaggatt  = pd.read_csv(path+"/muaggatt.csv") ; print "Total values in muaggatt.csv:", len(muaggatt.index)
+            component = pd.read_csv(path+"/comp.csv")    ; print "Total values in comp.csv:", len(component.index)
+            chorizon = pd.read_csv(path+"/chorizon.csv")  ; print "Total values in chorizon.csv:", len(chorizon.index)
+            chtextur = pd.read_csv(path+"/chtextur.csv")  ; print "Total values in chtextur.csv:", len(chtextur.index)
+            chtexgrp = pd.read_csv(path+"/chtexgrp.csv")  ; print "Total values in chtexgrp.csv:", len(chtexgrp.index)
 
             component_Muaggatt =  pd.merge(muaggatt , component, on='MUKEY')
             chorizon_Component_Muaggatt =  pd.merge(component_Muaggatt , chorizon, on='COKEY')
@@ -146,8 +154,8 @@ def step3_merge_ssurgo(path2collectionOfssurgoFolders ,path2lookupTable=lookupTa
         try:
             ## adding Soil group to the final table
 
-            final_table =  pd.read_csv(os.path.join(path2collectionOfssurgoFolders, folder, "MUKEY-Vs-Values.csv"))
-            muaggat = pd.read_csv(os.path.join(path2collectionOfssurgoFolders, folder,"tabular", "muaggatt.csv"))
+            final_table =  pd.read_csv(os.path.join(path2_ssurgo_or_statsgo, folder, "MUKEY-Vs-Values.csv"))
+            muaggat = pd.read_csv(os.path.join(path2_ssurgo_or_statsgo, folder,"tabular", "muaggatt.csv"))
 
             # remove duplicate Soil group elements
             # may be replacement is not advisable. Need to double check on this
@@ -159,10 +167,10 @@ def step3_merge_ssurgo(path2collectionOfssurgoFolders ,path2lookupTable=lookupTa
             muaggat=muaggat.replace("B/D", "B")
             muaggat=muaggat.replace("C/D", "C")
 
-            muaggat.to_csv(os.path.join(path2collectionOfssurgoFolders, folder,"tabular", "muaggatt_Removed_HydrGRP.csv"), index=False)
+            muaggat.to_csv(os.path.join(path2_ssurgo_or_statsgo, folder,"tabular", "muaggatt_Removed_HydrGRP.csv"), index=False)
 
             merge_soilGRP_final = pd.merge(final_table, muaggat, on= 'MUKEY')
-            merge_soilGRP_final.to_csv(os.path.join(path2collectionOfssurgoFolders, folder , "MUKEY-Vs-Values.csv"), index=False)
+            merge_soilGRP_final.to_csv(os.path.join(path2_ssurgo_or_statsgo, folder , "MUKEY-Vs-Values.csv"), index=False)
             print "Merging Soil Hydrologic Group Complete"
 
             # delete all the csv files made so far, except the MUKEY-Vs-Values.csv
@@ -174,7 +182,7 @@ def step3_merge_ssurgo(path2collectionOfssurgoFolders ,path2lookupTable=lookupTa
             print "Merging the Hydrologic Soil Group failed with the error %s"%e
 
 if __name__ == "__main__":
-    step3_merge_ssurgo( path2collectionOfssurgoFolders, lookupTable)
+    step3_merge_ssurgo( path2_ssurgo_or_statsgo, lookupTable)
 
 
 

@@ -1,19 +1,30 @@
 import os
 import arcpy
-
-path2_ssurgo =
-path2statsgo =
-outDir =
-MaskRaster =
+'''
+make statsgo folder entry optional, or make either of the two required.
+'''
 
 path2_ssurgo = arcpy.GetParameterAsText(0)
 path2statsgo = arcpy.GetParameterAsText(1) # make it optional
 outDir = arcpy.GetParameterAsText(2)
 MaskRaster = arcpy.GetParameterAsText(3)  
 
+if MaskRaster == "":
+    path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
+    path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
+    outDir = r"E:\Research Data\00 Red Butte Creek\RBC_del"
+    MaskRaster_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\mask_r"
+
+    # make raster layer
+    MaskRaster = MaskRaster_fullpath.split("\\")[-1]
+    arcpy.MakeRasterLayer_management(MaskRaster_fullpath, MaskRaster, "#", "", "1")
+
 
 
 def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
+
+    arcpy.CheckOutExtension("Spatial")
+
 
     arcpy.AddMessage("*** This scripts joins the soil values to mushape, and exports as Rasters *** ")
 
@@ -103,8 +114,8 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
 
     def merge_and_clip(TEMP):
         layers = df_layerList                                                   # arcpy.mapping.ListLayers(mxd, "", df)
-        statsgo_layers = [lyr.name for lyr in layers if lyr.name.endswith("_statsgo_prj")]
-        ssurgo_layers = [lyr.name for lyr in layers if lyr.name.endswith("_ssurgo_prj")]
+        statsgo_layers = [lyr for lyr in layers if lyr.endswith("_statsgo_prj")]
+        ssurgo_layers = [lyr for lyr in layers if lyr.endswith("_ssurgo_prj")]
 
         arcpy.AddMessage("MERGING ")
 
@@ -181,10 +192,6 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
                   clipping_geometry="NONE", maintain_clipping_extent="MAINTAIN_EXTENT")
             arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(outRaster+"c"), Output_Workspace=outDir, Raster_Format="TIFF")
             arcpy.AddMessage("SUCCESS: TIF representing %s values saved in %s"%(soil_property_name, outDir))
-
-            # making layer
-            arcpy.MakeFeatureLayer_management(os.path.join(outDir, soil_property_name+"c.tif") , soil_property_name+"c")
-            df_layerList.append("Project_ssurgo_statsgo_merge")
 
             # # load the TIF to arcmap
             # tif_layer = arcpy.mapping.Layer(os.path.join(outDir, soil_property_name+"c.tif") )                 # create a new layer

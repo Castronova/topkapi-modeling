@@ -23,15 +23,32 @@ Threshold should also be such that the area draining = 25 km2
 '''
 
 arcpy.env.overwriteOutput = True
-arcpy.CheckOutExtension("Spatial")
+arcpy.CheckOutExtension("Spatial")  # turns on spatial extension, required if run as standalone script
 arcpy.env.overwriteOutput = True    # to overwrite
 
-DEM = arcpy.GetParameterAsText(0)
-land_use = arcpy.GetParameterAsText(1)
+DEM = arcpy.GetParameterAsText(0)             # raster layer
+land_use = arcpy.GetParameterAsText(1)        # raster layer
 outDir= arcpy.GetParameterAsText(2)
-outlet_point_sf = arcpy.GetParameterAsText(3)
+outlet_point_sf = arcpy.GetParameterAsText(3) # feature layer
 threshold = arcpy.GetParameterAsText(4)
 
+if DEM == "":
+    # inputs for standalone operation
+    DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
+    land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
+    outDir= r"E:\Research Data\00 Red Butte Creek\RBC_3\New File Geodatabase (2).gdb"
+    outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_outlet"
+    threshold = ""
+
+    # make raster Layer
+    DEM = DEM_fullpath.split("\\")[-1]
+    arcpy.MakeRasterLayer_management(DEM_fullpath, DEM, "#", "", "1")
+    land_use = land_use_fullpath.split("\\")[-1]
+    arcpy.MakeRasterLayer_management(land_use_fullpath, land_use, "#", "", "1")
+
+    # make feature layer
+    outlet_point_sf = outlet_fullpath.split("\\")[-1]
+    arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
 
 def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     """

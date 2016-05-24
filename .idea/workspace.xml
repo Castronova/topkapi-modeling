@@ -2,66 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="77c9a26d-c161-41f9-9169-8c02b03f03cb" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/GREENAMPT_LOOKUPTABLE.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/JOIN STATSGO AND SSURGO.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/README.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/STEP0_DataPreprocessing.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/STEP1_Get_DEM_LANDUSE.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/STEP2_DEM_Processing.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/STEP3-Merge_STATSGO.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/STEP3_Merge_SSURGO.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/STEP3_Merge_SSURGO_backup.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/STEP4_Join_mukey_Feature_to_Raster.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/TEST_FILE.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/autoptpk2.tbx" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/fakeFiles.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/landuse_n.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_April24/landuse_n_temp.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/GREENAMPT_LOOKUPTABLE.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/JOIN STATSGO AND SSURGO.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/README.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/STEP0_DataPreprocessing.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/STEP1_Get_DEM_LANDUSE.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/STEP2_DEM_Processing.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/STEP3-Merge_STATSGO.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/STEP3_Merge_SSURGO.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/STEP4_Join_mukey_Feature_to_Raster.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/STEP4_Join_mukey_Feature_to_Raster_BACKUP.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/STEP5_Join_Merge_Export.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/TEST_FILE.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/autoptpk2.tbx" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/fakeFiles.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/landuse_n.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2 _backup_May1/landuse_n_temp.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2.zip" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/AutoHMS.tbx" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/AutoPTPK2.tbx" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/GetData_class.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/RunAutoHMS_class.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/STEP0_DataPreprocessing.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/STEP1_Get_DEM_LANDUSE.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/STEP2_DEM_Processing.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/STEP3-Merge_STATSGO.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/STEP3_Merge_SSURGO.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/STEP4_Join and Feature to Raster_BETA.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_GIS10.2/TEST_FILE.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/GREENAMPT_LOOKUPTABLE.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/JOIN STATSGO AND SSURGO.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/README.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/STEP0_DataPreprocessing.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/STEP1_Get_DEM_LANDUSE.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/STEP2_DEM_Processing.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/STEP3-Merge_STATSGO.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/STEP35_Feature to Raster.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/STEP3_Merge_SSURGO.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/STEP4_Join and Feature to Raster.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/STEP5_Rasters_2_TIFFs.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/autoptpk2.tbx" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/clip_rasters.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/fakeFiles.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2_backup_before_functions/trial_toTry.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP1_Get_DEM_LANDUSE.py" afterPath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP1_Get_DEM_LANDUSE.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ESRI MXDs/ResearchV4.mxd" afterPath="$PROJECT_DIR$/ESRI MXDs/ResearchV4.mxd" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2/autoptpk2.tbx" afterPath="$PROJECT_DIR$/scripts/AutoPTPK2/autoptpk2.tbx" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py" afterPath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP3_Merge_SSURGO.py" afterPath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP3_Merge_SSURGO.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP4_Join_Merge_Export.py" afterPath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP4_Join_Merge_Export.py" />
     </list>
     <ignored path="topkapi-modeling.iws" />
@@ -83,75 +28,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="TEST_FILE.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/TEST_FILE.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Run_autoptkp_python.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scripts/Run_autoptkp_python.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#9#0" expanded="true" />
-                <element signature="e#1026#1852#0" expanded="false" />
-                <element signature="e#2077#2687#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="STEP0_DataPreprocessing.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#9#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="STEP1_Get_DEM_LANDUSE.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP1_Get_DEM_LANDUSE.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="135" column="0" selection-start-line="135" selection-start-column="0" selection-end-line="135" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="STEP2_DEM_Processing.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="127" column="0" selection-start-line="127" selection-start-column="0" selection-end-line="127" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="STEP4_Join_Merge_Export.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP4_Join_Merge_Export.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.46363637">
-              <caret line="30" column="6" selection-start-line="30" selection-start-column="4" selection-end-line="30" selection-end-column="6" />
+            <state vertical-scroll-proportion="0.518851">
+              <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
-                <element signature="e#4488#17340#0" expanded="false" />
-                <element signature="e#23425#25096#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -180,7 +63,6 @@
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP4_Join_mukey_Feature_to_Raster.py" />
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP5_Merge_Export.py" />
         <option value="$PROJECT_DIR$/scripts/read_write_tif.py" />
-        <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP3_Merge_SSURGO.py" />
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/TEST_FILE.py" />
         <option value="$PROJECT_DIR$/simulations/TEST SIMULAITON5/run.py" />
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP5_Join_Merge_Export.py" />
@@ -189,8 +71,9 @@
         <option value="$PROJECT_DIR$/scripts/Run_autoptkp_python.py" />
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py" />
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP1_Get_DEM_LANDUSE.py" />
-        <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py" />
+        <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP3_Merge_SSURGO.py" />
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP4_Join_Merge_Export.py" />
+        <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py" />
       </list>
     </option>
   </component>
@@ -225,6 +108,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -325,7 +209,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
     </panes>
   </component>
@@ -334,7 +217,7 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
   </component>
-  <component name="RunManager" selected="Python.STEP0_DataPreprocessing">
+  <component name="RunManager" selected="Python.STEP2_DEM_Processing">
     <configuration default="false" name="STEP3_Merge_SSURGO" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -348,40 +231,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="topkapi-modeling" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP3_Merge_SSURGO.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
-    <configuration default="false" name="matplotlib" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/AutoPTPK2" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="topkapi-modeling" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/AutoPTPK2/matplotlib.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
-    <configuration default="false" name="ZonalStatistics-Soil" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/AutoPTPK2" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="topkapi-modeling" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/AutoPTPK2/ZonalStatistics-Soil.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -416,6 +265,40 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="topkapi-modeling" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="STEP4_Join_Merge_Export" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/AutoPTPK2" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="topkapi-modeling" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP4_Join_Merge_Export.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="STEP2_DEM_Processing" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/AutoPTPK2" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="topkapi-modeling" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -544,18 +427,18 @@
     </configuration>
     <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.STEP3_Merge_SSURGO" />
-      <item index="1" class="java.lang.String" itemvalue="Python.matplotlib" />
-      <item index="2" class="java.lang.String" itemvalue="Python.ZonalStatistics-Soil" />
-      <item index="3" class="java.lang.String" itemvalue="Python.Run_autoptkp_python" />
-      <item index="4" class="java.lang.String" itemvalue="Python.STEP0_DataPreprocessing" />
+      <item index="1" class="java.lang.String" itemvalue="Python.Run_autoptkp_python" />
+      <item index="2" class="java.lang.String" itemvalue="Python.STEP0_DataPreprocessing" />
+      <item index="3" class="java.lang.String" itemvalue="Python.STEP4_Join_Merge_Export" />
+      <item index="4" class="java.lang.String" itemvalue="Python.STEP2_DEM_Processing" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.STEP0_DataPreprocessing" />
-        <item index="1" class="java.lang.String" itemvalue="Python.Run_autoptkp_python" />
-        <item index="2" class="java.lang.String" itemvalue="Python.ZonalStatistics-Soil" />
-        <item index="3" class="java.lang.String" itemvalue="Python.matplotlib" />
-        <item index="4" class="java.lang.String" itemvalue="Python.STEP3_Merge_SSURGO" />
+        <item index="0" class="java.lang.String" itemvalue="Python.STEP2_DEM_Processing" />
+        <item index="1" class="java.lang.String" itemvalue="Python.STEP4_Join_Merge_Export" />
+        <item index="2" class="java.lang.String" itemvalue="Python.STEP3_Merge_SSURGO" />
+        <item index="3" class="java.lang.String" itemvalue="Python.STEP0_DataPreprocessing" />
+        <item index="4" class="java.lang.String" itemvalue="Python.Run_autoptkp_python" />
       </list>
     </recent_temporary>
   </component>
@@ -582,26 +465,26 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1420" y="-259" width="1234" height="1040" extended-state="6" />
-    <editor active="false" />
+    <frame x="1420" y="-259" width="1234" height="1040" extended-state="7" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.11204013" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19399786" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17713365" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17640573" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35501653" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32855567" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3800322" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3800322" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -642,6 +525,26 @@
     <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
+          <caret line="127" column="0" selection-start-line="127" selection-start-column="0" selection-end-line="127" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP4_Join_Merge_Export.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
           <caret line="86" column="53" selection-start-line="86" selection-start-column="53" selection-end-line="86" selection-end-column="53" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
@@ -655,8 +558,6 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#4488#17340#0" expanded="false" />
-            <element signature="e#23425#25096#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -880,13 +781,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP3-Merge_STATSGO.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/scripts/connectivity_v3.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.32297063">
@@ -943,74 +837,80 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/TEST_FILE.py">
+    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.43913537">
+          <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
           <folding>
-            <element signature="e#0#12#0" expanded="true" />
+            <element signature="e#0#9#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/scripts/Run_autoptkp_python.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
+        <state vertical-scroll-proportion="0.6575654">
           <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#0#9#0" expanded="false" />
             <element signature="e#1026#1852#0" expanded="false" />
             <element signature="e#2077#2687#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py">
+    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/TEST_FILE.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+          <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#0#12#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Program Files (x86)/ArcGIS/Desktop10.3/arcpy/arcpy/management.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5965517">
+          <caret line="6519" column="0" selection-start-line="6519" selection-start-column="0" selection-end-line="6519" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP3_Merge_SSURGO.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.4772727">
-          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.33762887">
+          <caret line="74" column="0" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
           <folding>
-            <element signature="e#0#19#0" expanded="true" />
+            <element signature="e#0#19#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP1_Get_DEM_LANDUSE.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="135" column="0" selection-start-line="135" selection-start-column="0" selection-end-line="135" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="127" column="0" selection-start-line="127" selection-start-column="0" selection-end-line="127" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.091561936">
+          <caret line="132" column="84" selection-start-line="132" selection-start-column="84" selection-end-line="132" selection-end-column="84" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP1_Get_DEM_LANDUSE.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.3123878">
+          <caret line="135" column="0" selection-start-line="135" selection-start-column="0" selection-end-line="135" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP4_Join_Merge_Export.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.46363637">
-          <caret line="30" column="6" selection-start-line="30" selection-start-column="4" selection-end-line="30" selection-end-column="6" />
+        <state vertical-scroll-proportion="0.518851">
+          <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#4488#17340#0" expanded="false" />
-            <element signature="e#23425#25096#0" expanded="false" />
           </folding>
         </state>
       </provider>
