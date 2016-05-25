@@ -1,6 +1,5 @@
 import arcpy
-import os
-import sys
+
 '''
 
 Future Improvements:
@@ -17,8 +16,16 @@ outGDB = arcpy.GetParameterAsText(2)
 wshedBoundary = arcpy.GetParameterAsText(3)
 bufferDi= arcpy.GetParameterAsText(4)
 cell_size = arcpy.GetParameterAsText(5)
-projection_file =  arcpy.GetParameterAsText(6)
+projection_file = arcpy.GetParameterAsText(6)
 
+if outGDB == "":
+    inUsername = "prasanna_usu"
+    inPassword = "Hydrology12!@"
+    outGDB = r"C:\Users\Prasanna\Box Sync\00 Red Butte Creek\RBC_2\New File Geodatabase (2).gdb"
+    wshedBoundary = r"C:\Users\Prasanna\Box Sync\00 Red Butte Creek\RBC_2\RawFiles.gdb\boundary"
+    bufferDi = ""
+    cell_size = ""
+    projection_file = ""
 
 def step1_get_dem_landuse(inUsername,inPassword,outGDB,wshedBoundary,bufferDi,cell_size, projection_file):
     """
