@@ -1,7 +1,6 @@
 import arcpy
 
 '''
-
 Future Improvements:
 Buffer distance and cell size meaningful values
 '''
@@ -21,8 +20,8 @@ projection_file = arcpy.GetParameterAsText(6)
 if outGDB == "":
     inUsername = "prasanna_usu"
     inPassword = "Hydrology12!@"
-    outGDB = r"C:\Users\Prasanna\Box Sync\00 Red Butte Creek\RBC_2\New File Geodatabase (2).gdb"
-    wshedBoundary = r"C:\Users\Prasanna\Box Sync\00 Red Butte Creek\RBC_2\RawFiles.gdb\boundary"
+    outGDB = r"E:\Research Data\00 Red Butte Creek\RBC_3\New File Geodatabase.gdb"
+    wshedBoundary = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_Box"
     bufferDi = ""
     cell_size = ""
     projection_file = ""

@@ -24,6 +24,32 @@ outCS = arcpy.GetParameterAsText(10)
 # shapefile_fieldAdded = arcpy.GetParameterAsText(10)
 # DEM, Landuse, .... [user input files, not downloaded]
 
+if projDir == "":
+    # inputs for standalone operation
+    DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
+    land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
+    outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_outlet"
+    threshold = ""
+    wshedBoundary = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_Box"
+    inUsername = "prasanna_usu"
+    inPassword = "Hydrology12!@"
+    bufferDi = ""
+    cell_size = ""
+    projection_file = ""
+    outCS = ""
+    path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
+    path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
+
+    # make raster Layer
+    DEM = DEM_fullpath.split("\\")[-1]
+    arcpy.MakeRasterLayer_management(DEM_fullpath, DEM, "#", "", "1")
+    land_use = land_use_fullpath.split("\\")[-1]
+    arcpy.MakeRasterLayer_management(land_use_fullpath, land_use, "#", "", "1")
+
+    # make feature layer
+    outlet_point_sf = outlet_fullpath.split("\\")[-1]
+    arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
+
 arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
 
 # list of empty directories to be made
