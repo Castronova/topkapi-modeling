@@ -1,20 +1,37 @@
 import os
 import arcpy
+'''
+make statsgo folder entry optional, or make either of the two required.
+'''
 
 path2_ssurgo = arcpy.GetParameterAsText(0)
 path2statsgo = arcpy.GetParameterAsText(1) # make it optional
 outDir = arcpy.GetParameterAsText(2)
 MaskRaster = arcpy.GetParameterAsText(3)  
 
+if MaskRaster == "":
+    path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
+    path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
+    outDir = r"E:\Research Data\00 Red Butte Creek\RBC_del"
+    MaskRaster_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\mask_r"
+
+    # make raster layer
+    MaskRaster = MaskRaster_fullpath.split("\\")[-1]
+    arcpy.MakeRasterLayer_management(MaskRaster_fullpath, MaskRaster, "#", "", "1")
+
 
 
 def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
+
+    arcpy.CheckOutExtension("Spatial")
+
 
     arcpy.AddMessage("*** This scripts joins the soil values to mushape, and exports as Rasters *** ")
 
     if not os.path.exists(outDir+"/TEMP"):
         os.mkdir(outDir+"/TEMP")
     TEMP = os.path.join(outDir, "TEMP")
+
     # soilProperties =[ [name from csv, new name for raster, field name defaulted by ArcGIS],.....
     soilProperties = [["ksat_r_WtAvg", "KSAT-s", "MUKEY_Vs_2" ],
                    ["Ks_WtAvg", "KSAT-t", "MUKEY_Vs_3" ],
@@ -26,8 +43,10 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
                    ["HydroGrp", "HSG_soil", "MUKEY_V_12"]
                    ]
 
-    mxd = arcpy.mapping.MapDocument("CURRENT")                                  # get the map document
-    df = arcpy.mapping.ListDataFrames(mxd,"*")[0]                               #first dataframe in the document
+    # mxd = arcpy.mapping.MapDocument("CURRENT")
+    # df = arcpy.mapping.ListDataFrames(mxd,"*")[0]
+    # get the map document
+    df_layerList = []
 
     # this file is used to clip the soil features
     arcpy.RasterToPolygon_conversion(in_raster=MaskRaster,
@@ -43,9 +62,6 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
         :return:
         """
 
-        mxd = arcpy.mapping.MapDocument("CURRENT")                                  # get the map document
-        df = arcpy.mapping.ListDataFrames(mxd,"*")[0]                               #first dataframe in the document
-
         # create a list of folders containing SSURGO folders only
         folderList = []
         [folderList.append(folders) for folders in os.listdir(path2statsgo_or_ssurgo)
@@ -57,9 +73,9 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
             path2_soilFolder= os.path.join(path2statsgo_or_ssurgo, folder)
             path2tabular = os.path.join(path2_soilFolder, "tabular")
             path2Spatial= os.path.join(path2_soilFolder,"spatial")
-            # arcpy.env.workspace =  path2_soilFolder   # arcpy.env.scratchWorkspace =
 
-            muShapefile = os.listdir(path2Spatial)[1].split('.')[0]                     # muShapefile = 'soilmu_a_ut612'
+
+            muShapefile = os.listdir(path2Spatial)[1].split('.')[0]                    # muShapefile = 'soilmu_a_ut612'
 
             # project the shapefile in ssurgo table, FILE SELECTION
             if dataType.lower() == "statsgo":
@@ -75,11 +91,16 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
                 print e
                 arcpy.AddMessage("FAILED: Shapefile projection")
     
-            # to add the projected shapefile from ssurgo, as a layer to the map at the bottom of the TOC in data frame 0
+            # to add the projected shapefile from ssurgo,as a layer to the map at the bottom of the TOC in data frame 0
             muShapefileAsLayer = new_mu
 
-            layer1 = arcpy.mapping.Layer(TEMP + "/"+ muShapefileAsLayer+ ".shp" ) # create a new layer
-            arcpy.mapping.AddLayer(df, layer1,"TOP")             #added to layer because this will be used code below
+            # make the file as layer, so that field join can be successful, and add the name to the list df_layerList
+            arcpy.MakeFeatureLayer_management(TEMP + "/"+ muShapefileAsLayer+ ".shp" ,muShapefileAsLayer )
+            df_layerList.append(muShapefileAsLayer)
+
+            ## old layer referencing style
+            # layer1 = arcpy.mapping.Layer(os.path.join(TEMP,muShapefileAsLayer+ ".shp") )         # create a new layer
+            # arcpy.mapping.AddLayer(df, layer1 ,"TOP")
 
             try:
                 # join the table that had mUKEY mapped to all soil properties
@@ -92,9 +113,9 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
 
 
     def merge_and_clip(TEMP):
-        layers = arcpy.mapping.ListLayers(mxd, "", df)
-        statsgo_layers = [lyr.name for lyr in layers if lyr.name.endswith("_statsgo_prj")]
-        ssurgo_layers = [lyr.name for lyr in layers if lyr.name.endswith("_ssurgo_prj")]
+        layers = df_layerList                                                   # arcpy.mapping.ListLayers(mxd, "", df)
+        statsgo_layers = [lyr for lyr in layers if lyr.endswith("_statsgo_prj")]
+        ssurgo_layers = [lyr for lyr in layers if lyr.endswith("_ssurgo_prj")]
 
         arcpy.AddMessage("MERGING ")
 
@@ -138,8 +159,12 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
                                    field_mappings="""AREASYMBOL "AREASYMBOL" true true false 20 Text 0 0 ,First,#,Project_statsgo_merged_Erase,AREASYMBOL,-1,-1,Project_ssurgo_merged,AREASYMBOL,-1,-1;SPATIALVER "SPATIALVER" true true false 4 Long 0 0 ,First,#,Project_statsgo_merged_Erase,SPATIALVER,-1,-1,Project_ssurgo_merged,SPATIALVER,-1,-1;MUSYM "MUSYM" true true false 6 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUSYM,-1,-1,Project_ssurgo_merged,MUSYM,-1,-1;MUKEY "MUKEY" true true false 30 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY,-1,-1,Project_ssurgo_merged,MUKEY,-1,-1;MUKEY_Vs_V "MUKEY_Vs_V" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_V,-1,-1,Project_ssurgo_merged,MUKEY_Vs_V,-1,-1;MUKEY_Vs_1 "MUKEY_Vs_1" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_1,-1,-1,Project_ssurgo_merged,MUKEY_Vs_1,-1,-1;MUKEY_Vs_2 "MUKEY_Vs_2" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_2,-1,-1,Project_ssurgo_merged,MUKEY_Vs_2,-1,-1;MUKEY_Vs_3 "MUKEY_Vs_3" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_3,-1,-1,Project_ssurgo_merged,MUKEY_Vs_3,-1,-1;MUKEY_Vs_4 "MUKEY_Vs_4" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_4,-1,-1,Project_ssurgo_merged,MUKEY_Vs_4,-1,-1;MUKEY_Vs_5 "MUKEY_Vs_5" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_5,-1,-1,Project_ssurgo_merged,MUKEY_Vs_5,-1,-1;MUKEY_Vs_6 "MUKEY_Vs_6" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_6,-1,-1,Project_ssurgo_merged,MUKEY_Vs_6,-1,-1;MUKEY_Vs_7 "MUKEY_Vs_7" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_7,-1,-1,Project_ssurgo_merged,MUKEY_Vs_7,-1,-1;MUKEY_Vs_8 "MUKEY_Vs_8" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_8,-1,-1,Project_ssurgo_merged,MUKEY_Vs_8,-1,-1;MUKEY_Vs_9 "MUKEY_Vs_9" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_Vs_9,-1,-1,Project_ssurgo_merged,MUKEY_Vs_9,-1,-1;MUKEY_V_10 "MUKEY_V_10" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_10,-1,-1,Project_ssurgo_merged,MUKEY_V_10,-1,-1;AREASYMB_1 "AREASYMB_1" true true false 20 Text 0 0 ,First,#,Project_statsgo_merged_Erase,AREASYMB_1,-1,-1;SPATIALV_1 "SPATIALV_1" true true false 4 Long 0 0 ,First,#,Project_statsgo_merged_Erase,SPATIALV_1,-1,-1;MUSYM_1 "MUSYM_1" true true false 6 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUSYM_1,-1,-1;MUKEY_1 "MUKEY_1" true true false 30 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_1,-1,-1;MUKEY_V_11 "MUKEY_V_11" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_11,-1,-1,Project_ssurgo_merged,MUKEY_V_11,-1,-1;MUKEY_V_12 "MUKEY_V_12" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_12,-1,-1,Project_ssurgo_merged,MUKEY_V_12,-1,-1;MUKEY_V_13 "MUKEY_V_13" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_13,-1,-1;MUKEY_V_14 "MUKEY_V_14" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_14,-1,-1;MUKEY_V_15 "MUKEY_V_15" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_15,-1,-1;MUKEY_V_16 "MUKEY_V_16" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_16,-1,-1;MUKEY_V_17 "MUKEY_V_17" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_17,-1,-1;MUKEY_V_18 "MUKEY_V_18" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_18,-1,-1;MUKEY_V_19 "MUKEY_V_19" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_19,-1,-1;MUKEY_V_20 "MUKEY_V_20" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_20,-1,-1;MUKEY_V_21 "MUKEY_V_21" true true false 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_21,-1,-1;MUKEY_V_22 "MUKEY_V_22" true true false 4 Long 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_22,-1,-1;MUKEY_V_23 "MUKEY_V_23" true true false 254 Text 0 0 ,First,#,Project_statsgo_merged_Erase,MUKEY_V_23,-1,-1;Shape_Length "Shape_Length" false true true 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,Shape_Length,-1,-1;Shape_Area "Shape_Area" false true true 8 Double 0 0 ,First,#,Project_statsgo_merged_Erase,Shape_Area,-1,-1""")
             arcpy.AddMessage("SUCCESS: Erasing NULL SSURGO records and Merging STATSGO to SSURGO")
 
-            merged_layer = arcpy.mapping.Layer(os.path.join(TEMP,"Project_ssurgo_statsgo_merge.shp") )                 # create a new layer
-            arcpy.mapping.AddLayer(df, merged_layer ,"TOP")
+            # making layer
+            arcpy.MakeFeatureLayer_management(os.path.join(TEMP,"Project_ssurgo_statsgo_merge.shp") , "Project_ssurgo_statsgo_merge" )
+            df_layerList.append("Project_ssurgo_statsgo_merge")
+
+            # merged_layer = arcpy.mapping.Layer(os.path.join(TEMP,"Project_ssurgo_statsgo_merge.shp"))# create new lyr
+            # arcpy.mapping.AddLayer(df, merged_layer ,"TOP")
         except Exception,e:
             arcpy.AddMessage("FAILED: Erasing NULL SSURGO records and Merging STATSGO to SSURGO")
         return os.path.join(TEMP,"Project_ssurgo_statsgo_merge")
@@ -168,9 +193,9 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster ):
             arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(outRaster+"c"), Output_Workspace=outDir, Raster_Format="TIFF")
             arcpy.AddMessage("SUCCESS: TIF representing %s values saved in %s"%(soil_property_name, outDir))
 
-            # load the TIF to arcmap
-            tif_layer = arcpy.mapping.Layer(os.path.join(outDir, soil_property_name+"c.tif") )                 # create a new layer
-            arcpy.mapping.AddLayer(df, tif_layer ,"TOP")
+            # # load the TIF to arcmap
+            # tif_layer = arcpy.mapping.Layer(os.path.join(outDir, soil_property_name+"c.tif") )                 # create a new layer
+            # arcpy.mapping.AddLayer(df, tif_layer ,"TOP")
     # __main__
     join_field( path2_ssurgo, MaskRaster,"ssurgo")
     if path2statsgo != "":

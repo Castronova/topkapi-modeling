@@ -26,6 +26,7 @@ outCS = arcpy.GetParameterAsText(10)
 
 if projDir == "":
     # inputs for standalone operation
+    projDir = r"E:\Research Data\00 Red Butte Creek\RBC_del"
     DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
     land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
     outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_outlet"
@@ -40,15 +41,6 @@ if projDir == "":
     path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
     path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
 
-    # make raster Layer
-    DEM = DEM_fullpath.split("\\")[-1]
-    arcpy.MakeRasterLayer_management(DEM_fullpath, DEM, "#", "", "1")
-    land_use = land_use_fullpath.split("\\")[-1]
-    arcpy.MakeRasterLayer_management(land_use_fullpath, land_use, "#", "", "1")
-
-    # make feature layer
-    outlet_point_sf = outlet_fullpath.split("\\")[-1]
-    arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
 
 arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
 
@@ -75,12 +67,12 @@ except Exception, e:
 
 
 # Step1, download the data
-step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
+#step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
 
 # Step2
-DEM = os.path.join(raw_files_outDir, "DEM_Prj")
-land_use = os.path.join(raw_files_outDir, "Land_Use_Prj")
-step2_dem_processing(DEM, land_use ,raw_files_outDir , outlet_point_sf, threshold)
+DEM_fullpath = os.path.join(raw_files_outDir, "DEM_Prj")
+land_use_fullpath = os.path.join(raw_files_outDir, "Land_Use_Prj")
+step2_dem_processing(DEM_fullpath, land_use_fullpath ,raw_files_outDir , outlet_fullpath, threshold)
 
 # Step4
 MatchRaster = os.path.join(raw_files_outDir, "mask_r")

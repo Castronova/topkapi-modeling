@@ -2,6 +2,11 @@ import pandas as pd
 import numpy as np
 import os
 
+'''
+For the A/B etc. designations in soil group, think about replacing it to a number, may be. or may be AB, AD rather
+than replacing them with a single soil group
+'''
+
 try:
     import arcpy
     path2_ssurgo_or_statsgo = arcpy.GetParameterAsText(0)

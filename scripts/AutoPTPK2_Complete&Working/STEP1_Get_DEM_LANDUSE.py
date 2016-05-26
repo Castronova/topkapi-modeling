@@ -1,8 +1,6 @@
 import arcpy
-import os
-import sys
-'''
 
+'''
 Future Improvements:
 Buffer distance and cell size meaningful values
 '''
@@ -17,8 +15,16 @@ outGDB = arcpy.GetParameterAsText(2)
 wshedBoundary = arcpy.GetParameterAsText(3)
 bufferDi= arcpy.GetParameterAsText(4)
 cell_size = arcpy.GetParameterAsText(5)
-projection_file =  arcpy.GetParameterAsText(6)
+projection_file = arcpy.GetParameterAsText(6)
 
+if outGDB == "":
+    inUsername = "prasanna_usu"
+    inPassword = "Hydrology12!@"
+    outGDB = r"E:\Research Data\00 Red Butte Creek\RBC_3\New File Geodatabase.gdb"
+    wshedBoundary = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_Box"
+    bufferDi = ""
+    cell_size = ""
+    projection_file = ""
 
 def step1_get_dem_landuse(inUsername,inPassword,outGDB,wshedBoundary,bufferDi,cell_size, projection_file):
     """
@@ -111,10 +117,6 @@ def step1_get_dem_landuse(inUsername,inPassword,outGDB,wshedBoundary,bufferDi,ce
 
     arcpy.AddMessage("DEM and Land Use file projected")
 
-    # put DEM and Land_Use on maps as a layer
-    mxd = arcpy.mapping.MapDocument("CURRENT")                                  # get the map document
-    df = arcpy.mapping.ListDataFrames(mxd,"*")[0]                               #first dataframe in the document
-
     #if cell size given, need to resample here
     if cell_size != "":
         """ resample to the user specified resolution """
@@ -137,11 +139,6 @@ def step1_get_dem_landuse(inUsername,inPassword,outGDB,wshedBoundary,bufferDi,ce
         arcpy.AddMessage("************Resample DEM and Land Use with cell size %s m completed ************"%cell_size)
 
 
-    DEM_layer = arcpy.mapping.Layer("DEM_Prj")    # create a new layer
-    arcpy.mapping.AddLayer(df, DEM_layer,"TOP")
-
-    LandUse_layer = arcpy.mapping.Layer("Land_Use_Prj")    # create a new layer
-    arcpy.mapping.AddLayer(df, LandUse_layer,"TOP")
 
 
 if __name__ == "__main__":

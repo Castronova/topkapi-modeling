@@ -2,37 +2,38 @@ import arcpy
 from arcpy.sa import *
 
 '''
-Issues:
+*Issues:*
 If output is folder, dissolve (around line 77 ) does not work
 
-Improvements
-Full path may not be required when we hae assigned workspace
-Default Threshold of flow accumulation
-Clipping / extracting by a mask
+*Improvements*
+Full path may not be required when we have assigned workspace
 Soil depth is in string
+Land use reclassification from the file
 
 Snapped outlet_point_sf/outlet needs to be created as a seperated point shapefile
 soil depth still missing
-SnapPourPoint distance = (5) *cell size
+
 Mask is created after delineating wshed from Outlet created in SnapPourPoint process. BUT,
     the outlet raster created takes its value from a field in vector point outlet shapefile as user input
     if the file does not have 1, the mask will end up with value != 1. Therefore,
     for user input outlet, need to add field and assign value =1
 
 Threshold should also be such that the area draining = 25 km2
+
+cell without stream reclassified to 255. This done aiming Pytopkapi, for other it might need correction
 '''
 
 arcpy.env.overwriteOutput = True
 arcpy.CheckOutExtension("Spatial")  # turns on spatial extension, required if run as standalone script
 arcpy.env.overwriteOutput = True    # to overwrite
 
-DEM = arcpy.GetParameterAsText(0)             # raster layer
-land_use = arcpy.GetParameterAsText(1)        # raster layer
+DEM_fullpath = arcpy.GetParameterAsText(0)             # raster layer
+land_use_fullpath = arcpy.GetParameterAsText(1)        # raster layer
 outDir= arcpy.GetParameterAsText(2)
-outlet_point_sf = arcpy.GetParameterAsText(3) # feature layer
+outlet_fullpath = arcpy.GetParameterAsText(3) # feature layer
 threshold = arcpy.GetParameterAsText(4)
 
-if DEM == "":
+if DEM_fullpath == "":
     # inputs for standalone operation
     DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
     land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
@@ -40,17 +41,7 @@ if DEM == "":
     outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_outlet"
     threshold = ""
 
-    # make raster Layer
-    DEM = DEM_fullpath.split("\\")[-1]
-    arcpy.MakeRasterLayer_management(DEM_fullpath, DEM, "#", "", "1")
-    land_use = land_use_fullpath.split("\\")[-1]
-    arcpy.MakeRasterLayer_management(land_use_fullpath, land_use, "#", "", "1")
-
-    # make feature layer
-    outlet_point_sf = outlet_fullpath.split("\\")[-1]
-    arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
-
-def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
+def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpath, threshold):
     """
     :param DEM: Projected DEM (for now, projected to UTM zone 12)
     :param land_use: Projected Land_use raster from NLCD
@@ -60,7 +51,17 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     :return:
     """
 
-    arcpy.AddMessage("*** This scripts Processes the DEM and Landuse data *** ")
+    arcpy.AddMessage("*** This scripts Processes the DEM and Landuse data %s *** "%DEM_fullpath)
+
+    # make raster Layer
+    DEM = DEM_fullpath.split("\\")[-1]
+    arcpy.MakeRasterLayer_management(DEM_fullpath, DEM,  "#", "", "1")
+    land_use = land_use_fullpath.split("\\")[-1]
+    arcpy.MakeRasterLayer_management(land_use_fullpath, land_use,  "#", "", "1")
+
+    # make feature layer
+    outlet_point_sf = outlet_fullpath.split("\\")[-1]
+    arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
 
     # Un tested
     if threshold == "": # threshold = "3000"
@@ -78,7 +79,7 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     FlowAccumulation('fdr').save('fac')
     Slope("fel", "DEGREE", "1").save('slope')
     FlowDirection("fel", "NORMAL",'slope').save('fdr')
-    SnapPourPoint(outlet_point_sf, 'fac', 3* arcpy.Describe(DEM).children[0].meanCellHeight,"").save("Outlet")
+    SnapPourPoint(outlet_point_sf, 'fac', 4* arcpy.Describe(DEM).children[0].meanCellHeight,"").save("Outlet")
     Watershed('fdr', "Outlet").save("mask")
     StreamRaster = (Raster('fac') >= float(threshold)) & (Raster("mask") >= 0) ; StreamRaster.save('str')
 
@@ -92,7 +93,7 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
         arcpy.Dissolve_management(in_features="catchtemp", out_feature_class="CatchPoly.shp", dissolve_field="GRIDCODE",
                                   statistics_fields="", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
     except Exception, e:
-        arcpy.AddMessage("FAILURE: "+ e)
+        arcpy.AddMessage("FAILURE: Creation of sub catchments")
 
 
     arcpy.AddMessage("SUCCESS: Fdr, Fac, Stream processing complete ")
@@ -155,7 +156,10 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
         dem_layer = arcpy.mapping.Layer(outDir+"/"+ "DEM_Prj_fc" )                 # create a new layer
         arcpy.mapping.AddLayer(df, dem_layer ,"TOP")
 
-        landuse_layer = arcpy.mapping.Layer(outDir+"/"+ "LandUse_Prj_fc" )                 # create a new layer
+        str_layer = arcpy.mapping.Layer(outDir+"/"+ "str_c_r" )                 # create a new layer
+        arcpy.mapping.AddLayer(df, str_layer ,"TOP")
+
+        landuse_layer = arcpy.mapping.Layer(outDir+"/"+ "Land_Use_Prj_c" )                 # create a new layer
         arcpy.mapping.AddLayer(df, landuse_layer ,"TOP")
 
         # n_Channel_layer = arcpy.mapping.Layer(outDir+"/n_Channel")      # create a new layer
@@ -164,7 +168,7 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
         n_Overland_layer = arcpy.mapping.Layer(outDir+"/n_Overland")    # create a new layer
         arcpy.mapping.AddLayer(df, n_Overland_layer,"TOP")
 
-        fdr_layer = arcpy.mapping.Layer(outDir+"/"+"fdr_r")                 # create a new layer
+        fdr_layer = arcpy.mapping.Layer(outDir+"/"+"fdr_c_r")                 # create a new layer
         arcpy.mapping.AddLayer(df, fdr_layer ,"TOP")
 
         slope_layer = arcpy.mapping.Layer(outDir+"/"+ "slope_c")                # create a new layer
@@ -174,5 +178,5 @@ def step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold):
     except Exception, e:
         print(arcpy.GetMessages())
 if __name__ == "__main__":
-    step2_dem_processing(DEM, land_use, outDir, outlet_point_sf, threshold)
+    step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpath, threshold)
 
