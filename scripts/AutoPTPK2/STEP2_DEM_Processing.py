@@ -2,30 +2,32 @@ import arcpy
 from arcpy.sa import *
 
 '''
-*Issues:*
+I/O
+--------------------------
+Input:  DEM and NLCD landuse raster
+        Watershed outlet point, saving directory, threshold no. for defining stream
+Output:
+        Rasters: Slope, Fdr, Fac, Stream, Catchments, Watershed, Mannings n for overland & channel
+        Vector:  Catchment/sub-watershed, streamnet
+
+ISSUES:
+---------------------------
 If output is folder, dissolve (around line 77 ) does not work
 
-*Improvements*
-Full path may not be required when we have assigned workspace
-Soil depth is in string
-Land use reclassification from the file
-
-Snapped outlet_point_sf/outlet needs to be created as a seperated point shapefile
-soil depth still missing
-
-Mask is created after delineating wshed from Outlet created in SnapPourPoint process. BUT,
+IMPROVEMENTS
+---------------------------
+1.Soil depth is in string
+2.Land use reclassification from the file
+3.soil depth still missing
+4.Mask is created after delineating wshed from Outlet created in SnapPourPoint process. BUT,
     the outlet raster created takes its value from a field in vector point outlet shapefile as user input
     if the file does not have 1, the mask will end up with value != 1. Therefore,
     for user input outlet, need to add field and assign value =1
-
-Threshold should also be such that the area draining = 25 km2
-
-cell without stream reclassified to 255. This done aiming Pytopkapi, for other it might need correction
+5.Threshold should also be such that the area draining = 25 km2
+6.Cell without stream reclassified to 255. This done aiming Pytopkapi, for other it might need correction
 '''
 
-arcpy.env.overwriteOutput = True
-arcpy.CheckOutExtension("Spatial")  # turns on spatial extension, required if run as standalone script
-arcpy.env.overwriteOutput = True    # to overwrite
+
 
 DEM_fullpath = arcpy.GetParameterAsText(0)             # raster layer
 land_use_fullpath = arcpy.GetParameterAsText(1)        # raster layer
@@ -37,7 +39,7 @@ if DEM_fullpath == "":
     # inputs for standalone operation
     DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
     land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
-    outDir= r"E:\Research Data\00 Red Butte Creek\RBC_3\New File Geodatabase (2).gdb"
+    outDir= r"C:\Users\Prasanna\Box Sync\00 Red Butte Creek\RBC_1\New File Geodatabase.gdb"
     outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_outlet"
     threshold = ""
 
@@ -63,24 +65,27 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     outlet_point_sf = outlet_fullpath.split("\\")[-1]
     arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
 
-    # Un tested
-    if threshold == "": # threshold = "3000"
-        area_threshold = 5 #km2
-        threshold = int (area_threshold / ( (arcpy.Describe(DEM).children[0].meanCellHeight)/1000. )**2)
+    cellSize = arcpy.Describe(DEM).children[0].meanCellHeight
 
-    # Set workspace environment
+    # Set workspace environment, and some defaults
     arcpy.env.workspace = arcpy.env.scratchWorkspace = outDir
     arcpy.env.snapRaster = DEM              # Set Snap Raster environment
     arcpy.env.overwriteOutput = True
+    arcpy.CheckOutExtension("Spatial")  # turns on spatial extension, required if run as standalone script
 
-    #trial
+    # set default threshold value for stream definition
+    if threshold == "": # threshold = "3000"
+        area_threshold = 5 #km2
+        threshold = int (area_threshold / ( (cellSize)/1000. )**2)
+
+    # DEM processing: Fill> fdr> fac> slope> stream> watershed
     Fill(DEM).save("fel")
     FlowDirection("fel").save('fdr')
     FlowAccumulation('fdr').save('fac')
     Slope("fel", "DEGREE", "1").save('slope')
     FlowDirection("fel", "NORMAL",'slope').save('fdr')
-    SnapPourPoint(outlet_point_sf, 'fac', 4* arcpy.Describe(DEM).children[0].meanCellHeight,"").save("Outlet")
-    Watershed('fdr', "Outlet").save("mask")
+    SnapPourPoint(outlet_point_sf, 'fac', 5* cellSize,"").save("Outlet")  # snaps to str if outlet point around 5 cell
+    Watershed('fdr', "Outlet", "Count").save("mask")
     StreamRaster = (Raster('fac') >= float(threshold)) & (Raster("mask") >= 0) ; StreamRaster.save('str')
 
     try:
@@ -90,15 +95,15 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
         StreamToFeature('strlnk', 'fdr', "Streamnet","NO_SIMPLIFY")                    # stream defined
         arcpy.RasterToPolygon_conversion("catchment", "CatchTemp", "NO_SIMPLIFY")
         arcpy.Dissolve_management("catchtemp", "CatchPoly", "GRIDCODE")                # dissolves extra catchments
-        arcpy.Dissolve_management(in_features="catchtemp", out_feature_class="CatchPoly.shp", dissolve_field="GRIDCODE",
-                                  statistics_fields="", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
+        # arcpy.Dissolve_management(in_features="catchtemp", out_feature_class="CatchPoly.shp", dissolve_field="GRIDCODE", statistics_fields="", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
+
     except Exception, e:
         arcpy.AddMessage("FAILURE: Creation of sub catchments")
 
-
     arcpy.AddMessage("SUCCESS: Fdr, Fac, Stream processing complete ")
 
-    #clip to the mask--------------------------------------------------------
+
+    # clip to the mask--------------------------------------------------------
     arcpy.gp.ExtractByMask_sa('str', "mask", 'str_c')
     arcpy.gp.ExtractByMask_sa('fdr', "mask", "fdr_c")
     arcpy.gp.ExtractByMask_sa("slope", "mask", "slope_c")
