@@ -40,7 +40,7 @@ def flatten_tiff(tifpath):
 #----
 path_2_tiffs = r"C:\Users\Prasanna\Box Sync\Red Butte Creek rasters2\TIFFs"
 path_2_tiffs= r"C:\Users\Prasanna\Box Sync\Red Butte Creek rastrers6\Tiffs"
-path_2_tiffs= r"C:\Users\Prasanna\Google Drive\SharedWithDrCastronova\2016\PyCharmWorkspace\FEB\NL_C03_2\create_the_parameter_files\\Tiff"
+path_2_tiffs= r"C:\Users\WIN10-HOME\OneDrive\Public\topkapi-modeling\simulations\TEST SIMULAITON5\create_the_parameter_files\Tiffs"
 
 input_files = ["mask2.tif", "str.tif" ,'DEM_Prj.tif', 'fdr.tif',  "drp.tif", "soildepth.tif", 'resmoisture.tif' ,
                'effporosity.tif','n_Overland.tif', 'n_Channel.tif', 'Land_Use_Prj.tif', 'poresize.tif',
