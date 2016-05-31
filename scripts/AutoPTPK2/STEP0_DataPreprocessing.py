@@ -27,12 +27,10 @@ outCS = arcpy.GetParameterAsText(10)
 # if script ran as standalone
 if projDir == "":
     # inputs for standalone operation
-    projDir = r"E:\Research Data\00 Red Butte Creek\RBC_del"
-    DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
-    land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
-    outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_outlet"
+    projDir = r"E:\Research Data\del_ras"
+    outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_outlet"
     threshold = ""
-    wshedBoundary = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_Box"
+    wshedBoundary = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_Box"
     inUsername = "prasanna_usu"
     inPassword = "Hydrology12!@"
     bufferDi = ""
@@ -42,6 +40,8 @@ if projDir == "":
     path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
     path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
 
+    #DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
+    #land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
 
 # list of empty directories to be made
 folders_to_create = ['DEM_processed_rasters', 'SSURGO_rasters', 'TIFFS', 'BinaryGrid']
@@ -66,8 +66,12 @@ except Exception, e:
 
 arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
 
+
+
+
+
 # Step1, download the data
-# step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
+#step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
 
 # Step2
 DEM_fullpath = os.path.join(raw_files_outDir, "DEM_Prj")

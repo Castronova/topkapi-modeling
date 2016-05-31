@@ -14,11 +14,11 @@ try:
 except Exception, e:
     print e
 
-if path2_ssurgo_or_statsgo == "":
-    # Input a folder that has all the folders of names similar to  UT012, Ut027 etc.
-    path2_ssurgo_or_statsgo = r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
-    lookupTable = os.path.join(os.getcwd(), "GREENAMPT_LOOKUPTABLE.csv")    #have not tested though
-    # lookupTable = r"C:\Users\Prasanna\Google Drive\RESEARCH\AutoPTPK2\GREENAMPT_LOOKUPTABLE.csv"
+# if path2_ssurgo_or_statsgo == "":
+#     # Input a folder that has all the folders of names similar to  UT012, Ut027 etc.
+#     path2_ssurgo_or_statsgo = r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
+#     lookupTable = os.path.join(os.getcwd(), "GREENAMPT_LOOKUPTABLE.csv")    #have not tested though
+#     # lookupTable = r"C:\Users\Prasanna\Google Drive\RESEARCH\AutoPTPK2\GREENAMPT_LOOKUPTABLE.csv"
     
 def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
     """

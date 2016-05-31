@@ -1,6 +1,6 @@
 import arcpy
 from arcpy.sa import *
-
+import os
 '''
 I/O
 --------------------------
@@ -32,15 +32,15 @@ IMPROVEMENTS
 DEM_fullpath = arcpy.GetParameterAsText(0)             # raster layer
 land_use_fullpath = arcpy.GetParameterAsText(1)        # raster layer
 outDir= arcpy.GetParameterAsText(2)
-outlet_fullpath = arcpy.GetParameterAsText(3) # feature layer
+outlet_fullpath = arcpy.GetParameterAsText(3)          # feature layer
 threshold = arcpy.GetParameterAsText(4)
 
 if DEM_fullpath == "":
     # inputs for standalone operation
-    DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
-    land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
-    outDir= r"C:\Users\Prasanna\Box Sync\00 Red Butte Creek\RBC_1\New File Geodatabase.gdb"
-    outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\RBC_outlet"
+    DEM_fullpath = r"E:\Research Data\del_ras\Raw_Files.gdb\DEM_Prj"
+    land_use_fullpath = r"E:\Research Data\del_ras\Raw_Files.gdb\Land_Use_Prj"
+    outDir= r"E:\Research Data\del_ras\Raw_Files.gdb"
+    outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_outlet"
     threshold = ""
 
 def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpath, threshold):
@@ -52,38 +52,39 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     :param threshold: Threshold for defining stream
     :return:
     """
+    arcpy.AddMessage("*** This scripts Processes the DEM and Landuse data *** ")
 
-    arcpy.AddMessage("*** This scripts Processes the DEM and Landuse data %s *** "%DEM_fullpath)
 
     # make raster Layer
-    DEM = DEM_fullpath.split("\\")[-1]
+    DEM = os.path.basename(DEM_fullpath) + "lyr"
     arcpy.MakeRasterLayer_management(DEM_fullpath, DEM,  "#", "", "1")
-    land_use = land_use_fullpath.split("\\")[-1]
+    land_use = os.path.basename(land_use_fullpath) + "lyr"
     arcpy.MakeRasterLayer_management(land_use_fullpath, land_use,  "#", "", "1")
 
     # make feature layer
-    outlet_point_sf = outlet_fullpath.split("\\")[-1]
+    outlet_point_sf = os.path.basename(outlet_fullpath); print "5"
     arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
+
+    arcpy.CheckOutExtension("Spatial")  # turns on spatial extension, required if run as standalone script
+    arcpy.env.workspace = outDir
+
+    # Set workspace environment, and some defaults
+    arcpy.env.snapRaster = DEM           # Set Snap Raster environment
+    arcpy.env.overwriteOutput = True
 
     cellSize = arcpy.Describe(DEM).children[0].meanCellHeight
 
-    # Set workspace environment, and some defaults
-    arcpy.env.workspace = arcpy.env.scratchWorkspace = outDir
-    arcpy.env.snapRaster = DEM              # Set Snap Raster environment
-    arcpy.env.overwriteOutput = True
-    arcpy.CheckOutExtension("Spatial")  # turns on spatial extension, required if run as standalone script
-
     # set default threshold value for stream definition
     if threshold == "": # threshold = "3000"
-        area_threshold = 5 #km2
+        area_threshold = 1 #km2
         threshold = int (area_threshold / ( (cellSize)/1000. )**2)
 
     # DEM processing: Fill> fdr> fac> slope> stream> watershed
-    Fill(DEM).save("fel")
-    FlowDirection("fel").save('fdr')
-    FlowAccumulation('fdr').save('fac')
-    Slope("fel", "DEGREE", "1").save('slope')
-    FlowDirection("fel", "NORMAL",'slope').save('fdr')
+    Fill(DEM).save("fel") ; print "1"
+    FlowDirection("fel").save('fdr'); print "2"
+    FlowAccumulation('fdr').save('fac'); print "3"
+    Slope("fel", "DEGREE", "1").save('slope'); print "4"
+    FlowDirection("fel", "NORMAL",'slope').save('fdr'); print "5"
     SnapPourPoint(outlet_point_sf, 'fac', 5* cellSize,"").save("Outlet")  # snaps to str if outlet point around 5 cell
     Watershed('fdr', "Outlet", "Count").save("mask")
     StreamRaster = (Raster('fac') >= float(threshold)) & (Raster("mask") >= 0) ; StreamRaster.save('str')

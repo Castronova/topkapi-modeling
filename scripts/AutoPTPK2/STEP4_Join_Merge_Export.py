@@ -9,11 +9,11 @@ path2statsgo = arcpy.GetParameterAsText(1) # make it optional
 outDir = arcpy.GetParameterAsText(2)
 MaskRaster_fullpath = arcpy.GetParameterAsText(3)
 
-if MaskRaster_fullpath == "":
-    path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
-    path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
-    outDir = r"E:\Research Data\00 Red Butte Creek\RBC_del"
-    MaskRaster_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\mask_r"
+# if MaskRaster_fullpath == "":
+#     path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
+#     path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
+#     outDir = r"E:\Research Data\00 Red Butte Creek\RBC_del"
+#     MaskRaster_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\mask_r"
 
 
 def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster_fullpath ):
@@ -21,7 +21,7 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster_fullp
     arcpy.CheckOutExtension("Spatial")
 
     # make raster layer
-    MaskRaster = MaskRaster_fullpath.split("\\")[-1]
+    MaskRaster = os.path.basename(MaskRaster_fullpath)
     arcpy.MakeRasterLayer_management(MaskRaster_fullpath, MaskRaster, "#", "", "1")
 
     if not os.path.exists(outDir+"/TEMP"):
