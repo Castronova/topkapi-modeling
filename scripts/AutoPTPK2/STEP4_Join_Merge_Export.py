@@ -9,11 +9,11 @@ path2statsgo = arcpy.GetParameterAsText(1) # make it optional
 outDir = arcpy.GetParameterAsText(2)
 MaskRaster_fullpath = arcpy.GetParameterAsText(3)
 
-# if MaskRaster_fullpath == "":
-#     path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
-#     path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
-#     outDir = r"E:\Research Data\00 Red Butte Creek\RBC_del"
-#     MaskRaster_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\mask_r"
+if MaskRaster_fullpath == "":
+    path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
+    path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
+    outDir = r"E:\Research Data\del\SSURGO_rasters"
+    MaskRaster_fullpath = r"E:\Research Data\del\Raw_files.gdb\mask_r"
 
 
 def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster_fullpath ):
@@ -22,7 +22,8 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster_fullp
 
     # make raster layer
     MaskRaster = os.path.basename(MaskRaster_fullpath)
-    arcpy.MakeRasterLayer_management(MaskRaster_fullpath, MaskRaster, "#", "", "1")
+    arcpy.MakeRasterLayer_management(MaskRaster_fullpath, "mask", "#", "", "1")
+    MaskRaster = "mask"
 
     if not os.path.exists(outDir+"/TEMP"):
         os.mkdir(outDir+"/TEMP")
@@ -193,9 +194,9 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster_fullp
             # tif_layer = arcpy.mapping.Layer(os.path.join(outDir, soil_property_name+"c.tif") )                 # create a new layer
             # arcpy.mapping.AddLayer(df, tif_layer ,"TOP")
     # __main__
-    join_field( path2_ssurgo, MaskRaster,"ssurgo")
+    join_field( path2_ssurgo, MaskRaster,dataType="ssurgo")
     if path2statsgo != "":
-        join_field( path2statsgo, MaskRaster, "statsgo" )
+        join_field( path2statsgo, MaskRaster, dataType="statsgo" )
     merge_and_clip(TEMP)
     erase_statsgo_and_merge()
     export(erase_statsgo_and_merge(), soilProperties, MaskRaster )

@@ -37,8 +37,8 @@ if projDir == "":
     cell_size = ""
     projection_file = ""
     outCS = ""
-    path2_ssurgo =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
-    path2statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
+    path2ssurgoFolders =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
+    path2statsgoFolders = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
 
     #DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
     #land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
@@ -82,12 +82,16 @@ MatchRaster = os.path.join(raw_files_outDir, "mask_r")
 STEP4_Join_Merge_Export (path2ssurgoFolders, path2statsgoFolders, ssurgo_outDir, MatchRaster )
 
 # To tif, and flt
-for outRaster in ["mask_r", "DEM_Prj_fc", "Land_Use_Prj_c",  "n_Overland", "fdr_c_r"  , "slope_c", "SD"]:
+for outRaster in ["mask_r", "DEM_Prj_fc", "NLCD_c",  "n_Overland", "fdr_cr" , "str_cr" , "slope_c", "SD"]:
     arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(raw_files_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
-    arcpy.RasterToFloat_conversion(in_raster="'%s'"%(os.path.join(raw_files_outDir, outRaster)), out_float_file=os.path.join(binaryGrid_outDir, outRaster+".flt"))
 
 for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "rsm-tc.tif" ]:
     arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(ssurgo_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
-    arcpy.RasterToFloat_conversion(in_raster="'%s'"%(os.path.join(ssurgo_outDir, outRaster)), out_float_file=os.path.join(binaryGrid_outDir, outRaster.split(".")[0]+".flt"))
 
-
+try:
+    for outRaster in ["mask_r", "DEM_Prj_fc", "NLCD_c",  "n_Overland", "fdr_cr" , "str_cr" , "slope_c", "SD"]:
+        arcpy.RasterToFloat_conversion(in_raster="'%s'"%(os.path.join(raw_files_outDir, outRaster)), out_float_file=os.path.join(binaryGrid_outDir, outRaster+".flt"))
+    for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "rsm-tc.tif" ]:
+        arcpy.RasterToFloat_conversion(in_raster="'%s'"%(os.path.join(ssurgo_outDir, outRaster)), out_float_file=os.path.join(binaryGrid_outDir, outRaster.split(".")[0]+".flt"))
+except Exception,e:
+    arcpy.AddMessage(e)
