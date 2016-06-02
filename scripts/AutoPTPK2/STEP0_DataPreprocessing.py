@@ -18,7 +18,7 @@ projDir = arcpy.GetParameterAsText(2)           # RAW FILES
 wshedBoundary = arcpy.GetParameterAsText(3)     # Bounding Box, as layer
 bufferDi= arcpy.GetParameterAsText(4)
 cell_size = arcpy.GetParameterAsText(5)
-outlet_point_sf = arcpy.GetParameterAsText(6)   # as layer again
+outlet_fullpath = arcpy.GetParameterAsText(6)   # as layer again
 threshold = arcpy.GetParameterAsText(7)         # Threshold for defining stream
 path2ssurgoFolders = arcpy.GetParameterAsText(8)
 path2statsgoFolders = arcpy.GetParameterAsText(9)
@@ -27,7 +27,7 @@ outCS = arcpy.GetParameterAsText(10)
 # if script ran as standalone
 if projDir == "":
     # inputs for standalone operation
-    projDir = r"E:\Research Data\del_ras"
+    projDir = r"E:\Research Data\del"
     outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_outlet"
     threshold = ""
     wshedBoundary = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_Box"
@@ -48,6 +48,7 @@ folders_to_create = ['DEM_processed_rasters', 'SSURGO_rasters', 'TIFFS', 'Binary
 
 # Out Directories
 raw_files_outDir = os.path.join(projDir, "Raw_files.gdb")
+downloads_outDir = os.path.join(projDir, "Downloads.gdb")
 DEM_processed_projDir = os.path.join(projDir, folders_to_create[0])
 ssurgo_outDir = os.path.join(projDir,folders_to_create[1])
 tiffs_outDir = os.path.join(projDir, folders_to_create[2])
@@ -60,6 +61,7 @@ try:
         if not os.path.exists(directory):
             os.makedirs(directory)
         arcpy.CreateFileGDB_management(projDir, "Raw_files.gdb")
+        arcpy.CreateFileGDB_management(projDir, "Downloads.gdb")
 
 except Exception, e:
     arcpy.AddMessage(e)
@@ -67,15 +69,12 @@ except Exception, e:
 arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
 
 
-
-
-
 # Step1, download the data
-#step1_get_dem_landuse(inUsername,inPassword,raw_files_outDir,wshedBoundary,bufferDi,cell_size, outCS)
+step1_get_dem_landuse(inUsername,inPassword,downloads_outDir ,wshedBoundary,bufferDi,cell_size, outCS)
 
 # Step2
-DEM_fullpath = os.path.join(raw_files_outDir, "DEM_Prj")
-land_use_fullpath = os.path.join(raw_files_outDir, "Land_Use_Prj")
+DEM_fullpath = os.path.join(downloads_outDir, "DEM_Prj")
+land_use_fullpath = os.path.join(downloads_outDir, "Land_Use_Prj")
 step2_dem_processing(DEM_fullpath, land_use_fullpath ,raw_files_outDir , outlet_fullpath, threshold)
 
 # Step4

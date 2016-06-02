@@ -37,9 +37,9 @@ threshold = arcpy.GetParameterAsText(4)
 
 if DEM_fullpath == "":
     # inputs for standalone operation
-    DEM_fullpath = r"E:\Research Data\del_ras\Raw_Files.gdb\DEM_Prj"
-    land_use_fullpath = r"E:\Research Data\del_ras\Raw_Files.gdb\Land_Use_Prj"
-    outDir= r"E:\Research Data\del_ras\Raw_Files.gdb"
+    DEM_fullpath = r"E:\Research Data\del\Downloads.gdb\DEM_Prj"
+    land_use_fullpath = r"E:\Research Data\del\Downloads.gdb\Land_Use_Prj"
+    outDir= r"E:\Research Data\del\New File Geodatabase.gdb"
     outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_outlet"
     threshold = ""
 
@@ -56,23 +56,27 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
 
 
     # make raster Layer
-    DEM = os.path.basename(DEM_fullpath) + "lyr"
-    arcpy.MakeRasterLayer_management(DEM_fullpath, DEM,  "#", "", "1")
-    land_use = os.path.basename(land_use_fullpath) + "lyr"
-    arcpy.MakeRasterLayer_management(land_use_fullpath, land_use,  "#", "", "1")
+    # this can be confusing. DEM_lyr and DEM represents the same things, a string now. But later,
+    # DEM_lyr represents the layer, with the same name
+    # DEM = os.path.basename(DEM_fullpath)
+    # land_use_lyr = os.path.basename(land_use_fullpath)
+
+    arcpy.MakeRasterLayer_management(DEM_fullpath, "DEM_lyr",  "#", "", "1")
+    arcpy.MakeRasterLayer_management(land_use_fullpath, "LU_lyr",  "#", "", "1")
 
     # make feature layer
-    outlet_point_sf = os.path.basename(outlet_fullpath); print "5"
+    outlet_point_sf = os.path.basename(outlet_fullpath)
     arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
 
     arcpy.CheckOutExtension("Spatial")  # turns on spatial extension, required if run as standalone script
     arcpy.env.workspace = outDir
 
     # Set workspace environment, and some defaults
-    arcpy.env.snapRaster = DEM           # Set Snap Raster environment
+    arcpy.env.snapRaster = DEM_fullpath           # Set Snap Raster environment
     arcpy.env.overwriteOutput = True
 
-    cellSize = arcpy.Describe(DEM).children[0].meanCellHeight
+    cellSize = arcpy.Describe("DEM_lyr").children[0].meanCellHeight
+
 
     # set default threshold value for stream definition
     if threshold == "": # threshold = "3000"
@@ -80,11 +84,11 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
         threshold = int (area_threshold / ( (cellSize)/1000. )**2)
 
     # DEM processing: Fill> fdr> fac> slope> stream> watershed
-    Fill(DEM).save("fel") ; print "1"
-    FlowDirection("fel").save('fdr'); print "2"
-    FlowAccumulation('fdr').save('fac'); print "3"
-    Slope("fel", "DEGREE", "1").save('slope'); print "4"
-    FlowDirection("fel", "NORMAL",'slope').save('fdr'); print "5"
+    Fill("DEM_lyr").save("fel")
+    FlowDirection("fel").save('fdr')
+    FlowAccumulation('fdr').save('fac')
+    Slope("fel", "DEGREE", "1").save('slope')
+    # FlowDirection("fel", "NORMAL",'slope').save('fdr')
     SnapPourPoint(outlet_point_sf, 'fac', 5* cellSize,"").save("Outlet")  # snaps to str if outlet point around 5 cell
     Watershed('fdr', "Outlet", "Count").save("mask")
     StreamRaster = (Raster('fac') >= float(threshold)) & (Raster("mask") >= 0) ; StreamRaster.save('str')
@@ -104,31 +108,24 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     arcpy.AddMessage("SUCCESS: Fdr, Fac, Stream processing complete ")
 
 
-    # clip to the mask--------------------------------------------------------
-    arcpy.gp.ExtractByMask_sa('str', "mask", 'str_c')
-    arcpy.gp.ExtractByMask_sa('fdr', "mask", "fdr_c")
-    arcpy.gp.ExtractByMask_sa("slope", "mask", "slope_c")
-    arcpy.gp.ExtractByMask_sa("fel", "mask", DEM+"_fc")      # f for fill, c for clip
-    arcpy.gp.ExtractByMask_sa(land_use, "mask", land_use+"_c")
-
-    # after clipping, we only use clipped files
-    land_use = land_use +"_c"
-    str = "str_c"
-    fdr = "fdr_c"
-    slope = "slope_c"
-    SD = "SD_c"    # c for consistency in naming
+    # # clip to the mask--------------------------------------------------------
+    ExtractByMask('str', "mask").save('str_c')
+    ExtractByMask('fdr', "mask").save("fdr_c")
+    ExtractByMask("slope", "mask").save("slope_c")
+    ExtractByMask("fel", "mask").save("DEM_Prj_fc")      # f for fill, c for clip
+    ExtractByMask(land_use_fullpath, "mask").save("NLCD_c")
 
     #strahler for mannings for channel
-    arcpy.gp.StreamOrder_sa(str, fdr, "STRAHLER", "STRAHLER")  # the last parameter, Strahler string, is actually a method of ordering stream. NOT A NAME
+    arcpy.gp.StreamOrder_sa("str_c", "fdr_c", "STRAHLER", "STRAHLER")  # the last parameter, Strahler string, is actually a method of ordering stream. NOT A NAME
     arcpy.AddMessage("SUCCESS: Strahler stream order processing complete")
 
-    arcpy.AddField_management(in_table= land_use , field_name="ManningsN", field_type="LONG",field_precision="",
+    arcpy.AddField_management(in_table= "NLCD_c" , field_name="ManningsN", field_type="LONG",field_precision="",
                               field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE",
                               field_is_required="NON_REQUIRED", field_domain="")
     arcpy.AddMessage("SUCCESS: Adding field to Land Use complete")
 
     # multiply Manning's n by 10,000. We will later divide it by 10,000 again
-    arcpy.gp.Reclassify_sa(land_use, "Value", "11 0;21 404;22 678;23 678;24 404;31 113;41 3600;42 3200;43 4000;52 4000;71 3680;81 3250;82 3250;90 860;95 1825", outDir+"/nx10000_Overl", "DATA")
+    arcpy.gp.Reclassify_sa("NLCD_c", "Value", "11 0;21 404;22 678;23 678;24 404;31 113;41 3600;42 3200;43 4000;52 4000;71 3680;81 3250;82 3250;90 860;95 1825", outDir+"/nx10000_Overl", "DATA")
     arcpy.AddMessage("SUCCESS: Land Use reclassification to obtain Mannings n complete ")
 
     # reclassifying Strahler order to get Manning's for channel in the same way
@@ -142,8 +139,8 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     arcpy.AddMessage("SUCCESS: All of DEM processing complete ")
 
     # Reclassify to change no data to -9999
-    arcpy.gp.Reclassify_sa(fdr, "Value", "1 1;2 2;4 4;8 8;16 16;32 32;64 64;128 128;NODATA -9999", fdr+"_r", "DATA")
-    arcpy.gp.Reclassify_sa(str, "Value", "0 255;1 1;NODATA 255", str + "_r", "DATA") #arcpy.gp.Reclassify_sa(str, "Value", "0 0;1 1;NODATA -9999", str + "_r", "DATA")
+    arcpy.gp.Reclassify_sa("fdr_c", "Value", "1 1;2 2;4 4;8 8;16 16;32 32;64 64;128 128;NODATA -9999", "fdr_cr", "DATA")
+    arcpy.gp.Reclassify_sa("str_c", "Value", "0 255;1 1;NODATA 255", "str_cr", "DATA") #arcpy.gp.Reclassify_sa(str, "Value", "0 0;1 1;NODATA -9999", str + "_r", "DATA")
     arcpy.gp.Reclassify_sa("mask", "Value", "2 1", "mask_r", "DATA")
 
     arcpy.CopyRaster_management(in_raster="mask_r",out_rasterdataset="SD",nodata_value="-9999")
@@ -162,10 +159,10 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
         dem_layer = arcpy.mapping.Layer(outDir+"/"+ "DEM_Prj_fc" )                 # create a new layer
         arcpy.mapping.AddLayer(df, dem_layer ,"TOP")
 
-        str_layer = arcpy.mapping.Layer(outDir+"/"+ "str_c_r" )                 # create a new layer
+        str_layer = arcpy.mapping.Layer(outDir+"/"+ "str_cr" )                 # create a new layer
         arcpy.mapping.AddLayer(df, str_layer ,"TOP")
 
-        landuse_layer = arcpy.mapping.Layer(outDir+"/"+ "Land_Use_Prj_c" )                 # create a new layer
+        landuse_layer = arcpy.mapping.Layer(outDir+"/"+ "NLCD_c" )                 # create a new layer
         arcpy.mapping.AddLayer(df, landuse_layer ,"TOP")
 
         # n_Channel_layer = arcpy.mapping.Layer(outDir+"/n_Channel")      # create a new layer
@@ -174,7 +171,7 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
         n_Overland_layer = arcpy.mapping.Layer(outDir+"/n_Overland")    # create a new layer
         arcpy.mapping.AddLayer(df, n_Overland_layer,"TOP")
 
-        fdr_layer = arcpy.mapping.Layer(outDir+"/"+"fdr_c_r")                 # create a new layer
+        fdr_layer = arcpy.mapping.Layer(outDir+"/"+"fdr_cr")                 # create a new layer
         arcpy.mapping.AddLayer(df, fdr_layer ,"TOP")
 
         slope_layer = arcpy.mapping.Layer(outDir+"/"+ "slope_c")                # create a new layer
