@@ -11,10 +11,10 @@ fn_ini = r'create_the_parameter_files\create_file.ini'
 generate_param_file(fn_ini, isolated_cells=False)
 print "Cell Parameter file created"
 
-# # slope corrections
-# modify_file.zero_slope_management('create_the_parameter_files/zero_slope_management.ini')
-# print "Zero Slope corrections made"
-#
+# slope corrections
+modify_file.zero_slope_management('create_the_parameter_files/zero_slope_management.ini')
+print "Zero Slope corrections made"
+
 # # run the model
 # os.chdir(r"C:\Users\WIN10-HOME\Documents\topkapi-modeling\simulations\TEST SIMULAITON6\run_the_model")
 # pytopkapi.run('TOPKAPI.ini')

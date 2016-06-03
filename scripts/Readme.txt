@@ -2,7 +2,7 @@ Once the TIFF are created..
 
 1. create_file.ini 				Check / edit filenames
 2. zero_slope_management.ini   	Change cell size in numerical_values
-3. Fake PPT_ET.py				Change path, time step (if wanted), no_of_cekks
+3. Fake PPT_ET.py				Change path, time step (if wanted), no_of_cells
 								This creates ET, and Rain hdf5 files in forcing variables.
 4. Runoff.dat					Change observed flow records too
 5. global_param.dat				Change X, A_thres,   W_min,     W_max
