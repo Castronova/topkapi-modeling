@@ -27,18 +27,18 @@ outCS = arcpy.GetParameterAsText(10)
 # if script ran as standalone
 if projDir == "":
     # inputs for standalone operation
-    projDir = r"E:\Research Data\del"
-    outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_outlet"
+    projDir = r"C:\Users\Prasanna\Box Sync\Bear River\Bear_04"
+    outlet_fullpath = r"C:\Users\Prasanna\Box Sync\Bear River\Bear_01\Outlet_BearRiver.shp"
     threshold = ""
-    wshedBoundary = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_Box"
+    wshedBoundary = r"C:\Users\Prasanna\Box Sync\Bear River\Bear_01\Wshed_BearRiver.shp"
     inUsername = "prasanna_usu"
     inPassword = "Hydrology12!@"
     bufferDi = ""
     cell_size = ""
     projection_file = ""
     outCS = ""
-    path2ssurgoFolders =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
-    path2statsgoFolders = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
+    path2ssurgoFolders =r"C:\Users\Prasanna\Box Sync\ssurgo-statsgo\SSURGO_folders"
+    path2statsgoFolders = r"C:\Users\Prasanna\Box Sync\ssurgo-statsgo\Statsgo_folders"
 
     #DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
     #land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
@@ -82,7 +82,7 @@ binaryGrid_outDir = os.path.join(projDir, folders_to_create[3])
 # STEP4_Join_Merge_Export (path2ssurgoFolders, path2statsgoFolders, ssurgo_outDir, MatchRaster )
 
 # To tif, and flt
-for outRaster in ["mask_r", "DEM_Prj_fc", "NLCD_c",  "n_Overland", "fdr_cr" , "str_cr" , "slope_c", "SD"]:
+for outRaster in ["mask_r", "DEM_Prj_fc", "NLCD_c",  "n_Overland", "fdr_cr" , "str_cr" , "slope_c", "SD", "str_cr9999"]:
     arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(raw_files_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
 
 for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "rsm-tc.tif" ]:
