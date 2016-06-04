@@ -37,8 +37,8 @@ if projDir == "":
     cell_size = ""
     projection_file = ""
     outCS = ""
-    path2ssurgoFolders =r"C:\Users\Prasanna\Box Sync\ssurgo-statsgo\SSURGO_folders"
-    path2statsgoFolders = r"C:\Users\Prasanna\Box Sync\ssurgo-statsgo\Statsgo_folders"
+    path2ssurgoFolders =r"E:\Research Data\00 Red Butte Creek\SSURGO_Folders"
+    path2statsgoFolders = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
 
     #DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
     #land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
@@ -76,10 +76,10 @@ binaryGrid_outDir = os.path.join(projDir, folders_to_create[3])
 # DEM_fullpath = os.path.join(downloads_outDir, "DEM_Prj")
 # land_use_fullpath = os.path.join(downloads_outDir, "Land_Use_Prj")
 # step2_dem_processing(DEM_fullpath, land_use_fullpath ,raw_files_outDir , outlet_fullpath, threshold)
-#
-# # Step4
-# MatchRaster = os.path.join(raw_files_outDir, "mask_r")
-# STEP4_Join_Merge_Export (path2ssurgoFolders, path2statsgoFolders, ssurgo_outDir, MatchRaster )
+
+# Step4
+MatchRaster = os.path.join(raw_files_outDir, "mask_r")
+STEP4_Join_Merge_Export (path2ssurgoFolders, path2statsgoFolders, ssurgo_outDir, MatchRaster )
 
 # To tif, and flt
 for outRaster in ["mask_r", "DEM_Prj_fc", "NLCD_c",  "n_Overland", "fdr_cr" , "str_cr" , "slope_c", "SD", "str_cr9999"]:
