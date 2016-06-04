@@ -129,6 +129,10 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     arcpy.gp.RasterCalculator_sa(""""nx10000_Overl" /10000.0""", outDir+"/n_Overland")
     arcpy.gp.RasterCalculator_sa(""""nx10000_Chan" /10000.0""", outDir+"/n_Channel")
 
+    # reclassify and clip peformed in n_channel to obtain 0 values for watershed cells which is not stream
+    arcpy.gp.Reclassify_sa("n_Channel", "Value", "1 1;2 2;3 3;4 4;5 5;6 6;NODATA 0", "n_Channel_r", "DATA")
+    ExtractByMask("n_Channel_r", "mask").save('n_Channel_rc')
+
     arcpy.AddMessage("SUCCESS: All of DEM processing complete ")
 
     # Reclassify to change no data to -9999

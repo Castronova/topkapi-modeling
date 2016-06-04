@@ -2,16 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="77c9a26d-c161-41f9-9169-8c02b03f03cb" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_the_model/data/RB_KF_C - Precipitation.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_the_model/data/Runoff_sample.dat" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_the_model/data/dailyFlow_fortDouglas_March2016.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_the_model/data/runoff_march_10172200.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_the_model/data/runoff_march_10172200.xlsx" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_the_model/data/runoff_march_10172200_15min.txt" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py" afterPath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/create_the_parameter_files/create_file.ini" afterPath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/create_the_parameter_files/create_file.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_the_model/parameter_files/global_param.dat" afterPath="$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_the_model/parameter_files/global_param.dat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py" afterPath="$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py" />
     </list>
     <ignored path="topkapi-modeling.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -42,10 +33,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="create_file.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="create_file.py" pinned="false" current-in-tab="false">
         <entry file="file://C:/Anaconda2/envs/PTPK/Lib/site-packages/pytopkapi/parameter_utils/create_file.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.8067376">
+            <state vertical-scroll-proportion="0.0">
               <caret line="231" column="41" selection-start-line="231" selection-start-column="41" selection-end-line="231" selection-end-column="41" />
               <folding>
                 <element signature="e#0#914#1" expanded="false" />
@@ -70,14 +61,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="STEP0_DataPreprocessing.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py">
+      <file leaf-file-name="STEP2_DEM_Processing.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="22" column="12" selection-start-line="22" selection-start-column="12" selection-end-line="22" selection-end-column="12" />
-              <folding>
-                <element signature="e#0#9#0" expanded="true" />
-              </folding>
+            <state vertical-scroll-proportion="0.7996965">
+              <caret line="131" column="106" selection-start-line="131" selection-start-column="106" selection-end-line="131" selection-end-column="106" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -114,20 +103,20 @@
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP3_Merge_SSURGO.py" />
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP1_Get_DEM_LANDUSE.py" />
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP4_Join_Merge_Export.py" />
-        <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py" />
         <option value="$PROJECT_DIR$/scripts/Fake PPT_ET.py" />
         <option value="$PROJECT_DIR$/simulations/TEST SIMULAITON_RBC6/run_COMPILE.py" />
         <option value="$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_COMPILE.py" />
         <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py" />
         <option value="C:/Anaconda2/envs/PTPK/Lib/site-packages/pytopkapi/parameter_utils/create_file.py" />
+        <option value="$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1359" />
-    <option name="y" value="-409" />
-    <option name="width" value="1380" />
-    <option name="height" value="1057" />
+    <option name="x" value="1358" />
+    <option name="y" value="-417" />
+    <option name="width" value="1936" />
+    <option name="height" value="1066" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -431,13 +420,13 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1359" y="-409" width="1380" height="1057" extended-state="0" />
+    <frame x="1358" y="-417" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14605068" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1032666" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19399786" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35930735" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2636656" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.38156486" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -797,13 +786,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="56" column="0" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Anaconda2/envs/PTPK/Lib/site-packages/pytopkapi/model.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33279485">
@@ -840,16 +822,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="22" column="12" selection-start-line="22" selection-start-column="12" selection-end-line="22" selection-end-column="12" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/simulations/TEST SIMULAITON6/run_COMPILE.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -860,7 +832,7 @@
     </entry>
     <entry file="file://C:/Anaconda2/envs/PTPK/Lib/site-packages/pytopkapi/parameter_utils/create_file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8067376">
+        <state vertical-scroll-proportion="0.0">
           <caret line="231" column="41" selection-start-line="231" selection-start-column="41" selection-end-line="231" selection-end-column="41" />
           <folding>
             <element signature="e#0#914#1" expanded="false" />
@@ -881,6 +853,24 @@
             <element signature="e#17953#21857#0" expanded="false" />
             <element signature="e#17953#18973#1" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP0_DataPreprocessing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.7">
+          <caret line="22" column="12" selection-start-line="22" selection-start-column="12" selection-end-line="22" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/AutoPTPK2/STEP2_DEM_Processing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7996965">
+          <caret line="131" column="106" selection-start-line="131" selection-start-column="106" selection-end-line="131" selection-end-column="106" />
+          <folding />
         </state>
       </provider>
     </entry>
