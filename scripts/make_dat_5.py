@@ -42,10 +42,10 @@ path_2_tiffs = r"C:\Users\Prasanna\Box Sync\Red Butte Creek rasters2\TIFFs"
 path_2_tiffs= r"C:\Users\Prasanna\Box Sync\Red Butte Creek rastrers6\Tiffs"
 path_2_tiffs= r"C:\Users\WIN10-HOME\OneDrive\Public\topkapi-modeling\simulations\TEST SIMULAITON5\create_the_parameter_files\Tiffs"
 
-input_files = ["mask2.tif", "str.tif" ,'DEM_Prj.tif', 'fdr.tif',  "drp.tif", "soildepth.tif", 'resmoisture.tif' ,
-               'effporosity.tif','n_Overland.tif', 'n_Channel.tif', 'Land_Use_Prj.tif', 'poresize.tif',
-               'bblingpr.tif' , 'kc_fake.tif', 'ksat.tif']
 
+input_files = ["mask_r.tif", "str_rc.tif" ,'DEM_Prj_fc.tif', 'fdr_cr.tif',  "slope_c.tif", "SD.tif", 'rsm-tc.tif' ,
+               'efpo-tc.tif','n_Overland.tif', 'n_Channel.tif', 'NLCD_c.tif', 'psd-tc.tif',
+               'bbl-tc.tif', 'ksat-tc.tif']
 # list of TIF in a different way, all tif from a specified folder
 os.chdir(path_2_tiffs)
 all_Files = os.listdir(path_2_tiffs)

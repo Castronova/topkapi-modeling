@@ -8,7 +8,7 @@ rainfall_outputFile = os.path.join(path, "rainfields_RBC.h5")
 ET_outputFile = os.path.join(path, "ET_RBC.h5")
 
 time_step = 20 #161
-no_of_cell = 19765
+no_of_cell = 182181
 rainfall_intensity_perUnitTime = 3  #mm
 
 with h5py.File(rainfall_outputFile,'w') as f2:

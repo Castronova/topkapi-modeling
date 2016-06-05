@@ -122,7 +122,7 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     arcpy.AddMessage("SUCCESS: Land Use reclassification to obtain Mannings n complete ")
 
     # reclassifying Strahler order to get Manning's for channel in the same way
-    arcpy.gp.Reclassify_sa("STRAHLER", "Value", "1 500;2 400;3 350;4 300;5 300;6 250", outDir+"/nx10000_Chan", "DATA")
+    arcpy.gp.Reclassify_sa("STRAHLER", "Value", "1 500;2 400;3 350;4 300;5 300;6 250;NODATA 0", outDir+"/nx10000_Chan", "DATA")
     arcpy.AddMessage("SUCCESS: Strahler order raster reclassification to obtain Mannings n complete **********")
 
     # now, NLCD to n calculate the real Manning's, divide reclassified raster by 10,000
@@ -130,8 +130,8 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     arcpy.gp.RasterCalculator_sa(""""nx10000_Chan" /10000.0""", outDir+"/n_Channel")
 
     # reclassify and clip peformed in n_channel to obtain 0 values for watershed cells which is not stream
-    arcpy.gp.Reclassify_sa("n_Channel", "Value", "1 1;2 2;3 3;4 4;5 5;6 6;NODATA 0", "n_Channel_r", "DATA")
-    ExtractByMask("n_Channel_r", "mask").save('n_Channel_rc')
+    # arcpy.gp.Reclassify_sa("n_Channel", "Value", "1 1;2 2;3 3;4 4;5 5;6 6;NODATA 0", "n_Channel_r", "DATA")
+    ExtractByMask("n_Channel", "mask").save('n_Channel_c')
 
     arcpy.AddMessage("SUCCESS: All of DEM processing complete ")
 
