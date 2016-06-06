@@ -27,7 +27,7 @@ outCS = arcpy.GetParameterAsText(10)
 # if script ran as standalone
 if projDir == "":
     # inputs for standalone operation
-    projDir = r"C:\Users\Prasanna\Box Sync\Bear River\Bear_04"
+    projDir = r"E:\Research Data\Bear River Basin\Bear_06_600m"
     outlet_fullpath = r"C:\Users\Prasanna\Box Sync\Bear River\Bear_01\Outlet_BearRiver.shp"
     threshold = ""
     wshedBoundary = r"C:\Users\Prasanna\Box Sync\Bear River\Bear_01\Wshed_BearRiver.shp"
@@ -54,20 +54,20 @@ ssurgo_outDir = os.path.join(projDir,folders_to_create[1])
 tiffs_outDir = os.path.join(projDir, folders_to_create[2])
 binaryGrid_outDir = os.path.join(projDir, folders_to_create[3])
 
-# # make the empty directories
-# try:
-#     for folder in folders_to_create:
-#         directory = os.path.join(projDir,folder)
-#         if not os.path.exists(directory):
-#             os.makedirs(directory)
-#         arcpy.CreateFileGDB_management(projDir, "Raw_files.gdb")
-#         arcpy.CreateFileGDB_management(projDir, "Downloads.gdb")
-#
-# except Exception, e:
-#     arcpy.AddMessage(e)
-#
-# arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
-#
+# make the empty directories
+try:
+    for folder in folders_to_create:
+        directory = os.path.join(projDir,folder)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        arcpy.CreateFileGDB_management(projDir, "Raw_files.gdb")
+        arcpy.CreateFileGDB_management(projDir, "Downloads.gdb")
+
+except Exception, e:
+    arcpy.AddMessage(e)
+
+arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
+
 #
 # # Step1, download the data
 # step1_get_dem_landuse(inUsername,inPassword,downloads_outDir ,wshedBoundary,bufferDi,cell_size, outCS)
@@ -76,13 +76,13 @@ binaryGrid_outDir = os.path.join(projDir, folders_to_create[3])
 # DEM_fullpath = os.path.join(downloads_outDir, "DEM_Prj")
 # land_use_fullpath = os.path.join(downloads_outDir, "Land_Use_Prj")
 # step2_dem_processing(DEM_fullpath, land_use_fullpath ,raw_files_outDir , outlet_fullpath, threshold)
-
-# Step4
-MatchRaster = os.path.join(raw_files_outDir, "mask_r")
-STEP4_Join_Merge_Export (path2ssurgoFolders, path2statsgoFolders, ssurgo_outDir, MatchRaster )
+#
+# # Step4
+# MatchRaster = os.path.join(raw_files_outDir, "mask_r")
+# STEP4_Join_Merge_Export (path2ssurgoFolders, path2statsgoFolders, ssurgo_outDir, MatchRaster )
 
 # To tif, and flt
-for outRaster in ["mask_r", "DEM_Prj_fc", "NLCD_c",  "n_Overland", "fdr_cr" , "str_cr" , "slope_c", "SD", "str_cr9999"]:
+for outRaster in ["mask_r", "DEM_Prj_fc",  "n_Overland", "n_Channel", "fdr_cr" , "str_cr" , "slope_c", "SD", "str_cr", "str_cr9999"]:
     arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(raw_files_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
 
 for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "rsm-tc.tif" ]:
