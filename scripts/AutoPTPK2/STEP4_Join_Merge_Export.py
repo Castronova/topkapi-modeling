@@ -20,10 +20,10 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster_fullp
     arcpy.AddMessage("*** This scripts joins the soil values to mushape, and exports as Rasters *** ")
     arcpy.CheckOutExtension("Spatial")
 
-    # make raster layer
-    MaskRaster = os.path.basename(MaskRaster_fullpath)
-    arcpy.MakeRasterLayer_management(MaskRaster_fullpath, "mask", "#", "", "1")
-    MaskRaster = "mask"
+    # # make raster layer
+    # MaskRaster = os.path.basename(MaskRaster_fullpath)
+    # arcpy.MakeRasterLayer_management(MaskRaster_fullpath, "mask", "#", "", "1")
+    MaskRaster = MaskRaster_fullpath #"mask"
 
     if not os.path.exists(outDir+"/TEMP"):
         os.mkdir(outDir+"/TEMP")

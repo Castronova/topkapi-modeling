@@ -137,7 +137,7 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
 
     # Reclassify to change no data to -9999
     arcpy.gp.Reclassify_sa("fdr_c", "Value", "1 1;2 2;4 4;8 8;16 16;32 32;64 64;128 128;NODATA -9999", "fdr_cr", "DATA")
-    arcpy.gp.Reclassify_sa("str_c", "Value", "0 255;1 1;NODATA 255", "str_cr", "DATA") #arcpy.gp.Reclassify_sa(str, "Value", "0 0;1 1;NODATA -9999", str + "_r", "DATA")
+    arcpy.gp.Reclassify_sa("str_c", "Value", "0 255;1 1;NODATA 255", "str_cr255", "DATA") #arcpy.gp.Reclassify_sa(str, "Value", "0 0;1 1;NODATA -9999", str + "_r", "DATA")
     arcpy.gp.Reclassify_sa("str_c", "Value", "0 0;1 1;NODATA -9999", "str_cr9999", "DATA")
     arcpy.gp.Reclassify_sa("mask", "Value", "2 1", "mask_r", "DATA")
 
