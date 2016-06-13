@@ -3,13 +3,13 @@
 ##### my code #####
 import os, h5py , numpy
 
-path = "../simulations/TEST SIMULAITON_RBC7/run_the_model/forcing_variables"
-path = r"C:\Users\WIN10-HOME\OneDrive\Public\topkapi-modeling\simulations\TEST SIMULAITON7\run_the_model\forcing_variables"
+path = "../simulations/TEST SIMULAITON_RBC_demo/run_the_model/forcing_variables"
+path = r"C:\Users\WIN10-HOME\OneDrive\Public\topkapi-modeling\simulations\TEST SIMULAITON_RBC_demo\run_the_model\forcing_variables"
 rainfall_outputFile = os.path.join(path, "rainfields_RBC.h5")
 ET_outputFile = os.path.join(path, "ET_RBC.h5")
 
 time_step = 20 #161
-no_of_cell = 21362
+no_of_cell = 19765
 rainfall_intensity_perUnitTime = 3  #mm
 
 with h5py.File(rainfall_outputFile,'w') as f2:
