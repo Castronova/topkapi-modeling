@@ -3,10 +3,7 @@ from STEP1_Get_DEM_LANDUSE import step1_get_dem_landuse
 from STEP2_DEM_Processing import step2_dem_processing
 from STEP4_Join_Merge_Export import STEP4_Join_Merge_Export
 import arcpy
-try:
-    from STEP3_Merge_SSURGO import step3_merge_ssurgo
-except Exception,e:
-    arcpy.AddMessage(e)
+from ConfigParser import SafeConfigParser
 
 arcpy.env.overwriteOutput = True
 arcpy.CheckOutExtension("Spatial")
@@ -26,22 +23,39 @@ outCS = arcpy.GetParameterAsText(10)
 
 # INPUTS, if script ran as standalone
 if projDir == "":
-    # inputs for standalone operation
-    projDir = r"E:\Research Data\RBC_demo_uwrl"
-    outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_\RawFiles.gdb\RBC_outlet"
-    threshold = ""
-    wshedBoundary = r"E:\Research Data\00 Red Butte Creek\RBC_\RawFiles.gdb\RBC_box"
-    inUsername = "prasanna_usu"
-    inPassword = "Hydrology12!@"
-    bufferDi = ""
-    cell_size = ""
-    projection_file = ""
-    outCS = ""
-    path2ssurgoFolders =r"E:\Research Data\ssurgo-statsgo\SSURGO_folders"
-    path2statsgoFolders = r"E:\Research Data\ssurgo-statsgo\Statsgo_folders"
 
-    #DEM_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\DEM_Prj"
-    #land_use_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_3\RawFiles.gdb\Land_Use_Prj"
+    # initializing
+    ini_fname = "./Pytopkapi_simulation.ini"
+    config = SafeConfigParser()
+    config.read(ini_fname)
+
+    # path to directories
+    path2ssurgoFolders = config.get('directory', 'ssurgo_collection')
+    path2statsgoFolders = config.get('directory', 'statsgo_collection')
+    projDir = config.get('directory', 'projDir')
+
+    # path to shapefiles
+    outlet_fullpath = config.get('input_files', 'outlet_fullpath')
+    wshedBoundary = config.get('input_files', 'wshedBoundary')
+
+    # path to other variables
+    threshold = config.get('other_parameter', 'threshold')
+    inUsername = config.get('other_parameter', 'inUsername')
+    inPassword = config.get('other_parameter', 'inPassword')
+    bufferDi = config.get('other_parameter', 'bufferDi')
+    cell_size = config.get('other_parameter', 'cell_size')
+    outCS = config.get('other_parameter', 'outCS')
+
+    # flags, which help decide whether or no
+    download_data = config.get('flags', 'download_data')
+    process_dem = config.get('flags', 'process_dem')
+    extract_ssurgo_data = config.get('flags', 'extract_ssurgo_data')
+    merge_ssurgo_to_raster = config.get('flags', 'merge_ssurgo_to_raster')
+
+    del_downloaded_files = config.get('flags', 'del_downloaded_files')
+    del_ssurgo_files = config.get('flags', 'del_ssurgo_files')
+    del_demProcessed_files = config.get('flags', 'del_demProcessed_files')
+
 
 # list of empty directories to be made
 folders_to_create = ['DEM_processed_rasters', 'SSURGO_rasters', 'TIFFS']
@@ -53,45 +67,73 @@ DEM_processed_projDir = os.path.join(projDir, folders_to_create[0])
 ssurgo_outDir = os.path.join(projDir,folders_to_create[1])
 tiffs_outDir = os.path.join(projDir, folders_to_create[2])
 
-#
-# # make the empty directories
-# try:
-#     for folder in folders_to_create:
-#         directory = os.path.join(projDir,folder)
-#         if not os.path.exists(directory):
-#             os.makedirs(directory)
-#         arcpy.CreateFileGDB_management(projDir, "Raw_files.gdb")
-#         arcpy.CreateFileGDB_management(projDir, "Downloads.gdb")
-#
-# except Exception, e:
-#     arcpy.AddMessage(e)
-#
-# arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
-#
-#
-# # Step1, download the data
-# step1_get_dem_landuse(inUsername,inPassword,downloads_outDir ,wshedBoundary,bufferDi,cell_size, outCS)
-#
-# # Step2
-# DEM_fullpath = os.path.join(downloads_outDir, "DEM_Prj")
-# land_use_fullpath = os.path.join(downloads_outDir, "Land_Use_Prj")
-# step2_dem_processing(DEM_fullpath, land_use_fullpath ,raw_files_outDir , outlet_fullpath, threshold)
-#
-# # Step4
-# MatchRaster = os.path.join(raw_files_outDir, "mask_r")
-# STEP4_Join_Merge_Export (path2ssurgoFolders, path2statsgoFolders, ssurgo_outDir, MatchRaster )
+
+# make the empty directories
+try:
+    for folder in folders_to_create:
+        directory = os.path.join(projDir,folder)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        arcpy.CreateFileGDB_management(projDir, "Raw_files.gdb")
+        arcpy.CreateFileGDB_management(projDir, "Downloads.gdb")
+
+except Exception, e:
+    arcpy.AddMessage(e)
+
+arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
+
+if download_data.lower() == 'true':
+    # Step1, download the data
+    step1_get_dem_landuse(inUsername,inPassword,downloads_outDir ,wshedBoundary,bufferDi,cell_size, outCS)
+
+if process_dem.lower() == 'true':
+    # Step2
+    DEM_fullpath = os.path.join(downloads_outDir, "DEM_Prj")
+    land_use_fullpath = os.path.join(downloads_outDir, "Land_Use_Prj")
+    step2_dem_processing(DEM_fullpath, land_use_fullpath ,raw_files_outDir , outlet_fullpath, threshold)
+
+if extract_ssurgo_data.lower() == 'true':
+    # Step3
+    try:
+        from STEP3_Merge_SSURGO import step3_merge_ssurgo
+        lookupTable = os.path.join(os.getcwd(), "GREENAMPT_LOOKUPTABLE.csv")
+        step3_merge_ssurgo(path2ssurgoFolders ,path2lookupTable=lookupTable )
+        step3_merge_ssurgo(path2statsgoFolders ,path2lookupTable=lookupTable )
+    except Exception,e:
+        arcpy.AddMessage(e)
+
+if merge_ssurgo_to_raster.lower() == 'true':
+    # Step4
+    MatchRaster = os.path.join(raw_files_outDir, "mask_r")
+    STEP4_Join_Merge_Export (path2ssurgoFolders, path2statsgoFolders, ssurgo_outDir, MatchRaster )
 
 # To tif, and flt
-for outRaster in ["mask_r", "DEM_Prj_fc",  "n_Overland", "n_Channel", "fdr_cr" , "slope_c", "SD", "str_c", "str_cr9999", "str_c255"]:
+for outRaster in ["mask_r", "DEM_Prj_fc",  "n_Overland", "n_Channel", "fdr_cr" , "slope_c", "SD", "str_c", "str_cr9999", "str_cr255"]:
     arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(raw_files_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
 
 for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "rsm-tc.tif" ]:
     arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(ssurgo_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
 
-# try:
-#     for outRaster in ["mask_r", "DEM_Prj_fc", "NLCD_c",  "n_Overland", "fdr_cr"  , "slope_c", "SD","str_c","str_cr9999"]:
-#         arcpy.RasterToFloat_conversion(in_raster="'%s'"%(os.path.join(raw_files_outDir, outRaster)), out_float_file=os.path.join(binaryGrid_outDir, outRaster+".flt"))
-#     for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "rsm-tc.tif" ]:
-#         arcpy.RasterToFloat_conversion(in_raster="'%s'"%(os.path.join(ssurgo_outDir, outRaster)), out_float_file=os.path.join(binaryGrid_outDir, outRaster.split(".")[0]+".flt"))
-# except Exception,e:
-#     arcpy.AddMessage(e)
+# delete unnecessary files
+# unnecessary files in TIF folder, that are not tif
+for file in os.listdir(tiffs_outDir):
+    if file.split(".")[-1] != ".tif":
+        os.remove(os.path.join(tiffs_outDir,file))
+
+# del downloaded files
+if del_downloaded_files.lower()== 'true':
+    for file in os.listdir(downloads_outDir):
+        os.remove(os.path.join(downloads_outDir, file))
+    os.rmdir(downloads_outDir)
+
+# del DEM processed file
+if del_ssurgo_files.lower()== 'true':
+    for file in os.listdir(downloads_outDir):
+        os.remove(os.path.join(downloads_outDir, file))
+    os.rmdir(downloads_outDir)
+
+# del SSURGO files
+if del_demProcessed_files.lower()== 'true':
+    for file in os.listdir(ssurgo_outDir):
+        os.remove(os.path.join(ssurgo_outDir, file))
+    os.rmdir(ssurgo_outDir)
