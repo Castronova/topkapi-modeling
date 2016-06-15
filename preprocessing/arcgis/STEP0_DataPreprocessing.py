@@ -4,6 +4,7 @@ from STEP2_DEM_Processing import step2_dem_processing
 from STEP4_Join_Merge_Export import STEP4_Join_Merge_Export
 import arcpy
 from ConfigParser import SafeConfigParser
+import shutil
 
 arcpy.env.overwriteOutput = True
 arcpy.CheckOutExtension("Spatial")
@@ -120,20 +121,22 @@ for file in os.listdir(tiffs_outDir):
     if file.split(".")[-1] != ".tif":
         os.remove(os.path.join(tiffs_outDir,file))
 
+# copy file
+os.mkdir()
+for file in os.listdir(tiffs_outDir):
+    shutil.copy(os.path.join(tiffs_outDir,file), dest)
+
 # del downloaded files
 if del_downloaded_files.lower()== 'true':
-    for file in os.listdir(downloads_outDir):
-        os.remove(os.path.join(downloads_outDir, file))
-    os.rmdir(downloads_outDir)
+    shutil.rmtree(downloads_outDir, ignore_errors=True)
+    # for file in os.listdir(downloads_outDir):
+    #     os.remove(os.path.join(downloads_outDir, file))
+    # os.rmdir(downloads_outDir)
 
 # del DEM processed file
 if del_ssurgo_files.lower()== 'true':
-    for file in os.listdir(downloads_outDir):
-        os.remove(os.path.join(downloads_outDir, file))
-    os.rmdir(downloads_outDir)
+    shutil.rmtree(raw_files_outDir, ignore_errors=True)
 
 # del SSURGO files
 if del_demProcessed_files.lower()== 'true':
-    for file in os.listdir(ssurgo_outDir):
-        os.remove(os.path.join(ssurgo_outDir, file))
-    os.rmdir(ssurgo_outDir)
+    shutil.rmtree(ssurgo_outDir, ignore_errors=True)
