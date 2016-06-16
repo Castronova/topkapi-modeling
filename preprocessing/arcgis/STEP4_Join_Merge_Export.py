@@ -193,6 +193,7 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster_fullp
             # # load the TIF to arcmap
             # tif_layer = arcpy.mapping.Layer(os.path.join(outDir, soil_property_name+"c.tif") )                 # create a new layer
             # arcpy.mapping.AddLayer(df, tif_layer ,"TOP")
+
     # __main__
     join_field( path2_ssurgo, MaskRaster,dataType="ssurgo")
     if path2statsgo != "":

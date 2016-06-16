@@ -47,6 +47,9 @@ if projDir == "":
     cell_size = config.get('other_parameter', 'cell_size')
     outCS = config.get('other_parameter', 'outCS')
 
+    # output
+    tiff_folder = config.get('output', 'tiff_folder')
+
     # flags, which help decide whether or no
     download_data = config.get('flags', 'download_data')
     process_dem = config.get('flags', 'process_dem')
@@ -118,13 +121,19 @@ for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "rs
 # delete unnecessary files
 # unnecessary files in TIF folder, that are not tif
 for file in os.listdir(tiffs_outDir):
-    if file.split(".")[-1] != ".tif":
+    if not file.split(".")[-1] in ['tif', "gdb", "xlsx"] :
         os.remove(os.path.join(tiffs_outDir,file))
+for file in os.listdir(ssurgo_outDir):
+    if file.split(".")[-1] in ['tif' , 'TEMP']:
+        os.remove(os.path.join(ssurgo_outDir,file))
 
-# copy file
-os.mkdir()
+# copy files
+# tif_folder = folder where tiff are supposed to be saved for pytopkapi
+# tif_outDir = folder where tiff are created by the script above
+if not os.path.exists(tiff_folder):
+    os.mkdir(tiff_folder)
 for file in os.listdir(tiffs_outDir):
-    shutil.copy(os.path.join(tiffs_outDir,file), dest)
+    shutil.copy(os.path.join(tiffs_outDir,file), tiff_folder)
 
 # del downloaded files
 if del_downloaded_files.lower()== 'true':

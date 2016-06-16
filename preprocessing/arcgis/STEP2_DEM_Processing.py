@@ -145,7 +145,6 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     arcpy.AddMessage("SUCCESS: Assigning -9999 to NoData, mask and Soil depth creation  completed")
 
 
-
     try:
         # Add n_Channel and n_Overland to layer and then to map document
         mxd = arcpy.mapping.MapDocument("CURRENT")                      # get the map document
