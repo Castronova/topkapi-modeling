@@ -1,16 +1,27 @@
 name: pytopkapi
 dependencies:
+- cycler=0.10.0=py27_0
+- freetype=2.5.5=1
 - h5py=2.6.0=np111py27_1
+- hdf5=1.8.16=0
+- libpng=1.6.22=0
+- matplotlib=1.5.1=np111py27_0
 - mkl=11.3.3=0
 - numexpr=2.5.2=np111py27_1
 - numpy=1.11.0=py27_1
 - openssl=1.0.2h=1
 - pip=8.1.2=py27_0
+- pyparsing=2.1.4=py27_0
+- pyqt=4.11.4=py27_3
 - pytables=3.2.2=np111py27_3
 - python=2.7.11=0
+- python-dateutil=2.5.3=py27_0
+- pytz=2016.4=py27_0
+- qt=4.8.7=3
 - readline=6.2=2
 - scipy=0.17.1=np111py27_0
 - setuptools=23.0.0=py27_0
+- sip=4.16.9=py27_0
 - six=1.10.0=py27_0
 - sqlite=3.13.0=0
 - tk=8.5.18=0
