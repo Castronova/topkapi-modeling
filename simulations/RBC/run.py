@@ -1,12 +1,15 @@
+import sys
+sys.path.append('../../PyTOPKAPI')
+
 import pytopkapi
 from pytopkapi.results_analysis import plot_Qsim_Qobs_Rain, plot_soil_moisture_maps
 import os
 import h5py
-from PIL import Image
+# from PIL import Image
 
-os.chdir(r"C:\Users\WIN10-HOME\Documents\topkapi-modeling\simulations\TEST SIMULAITON5\run_the_model")
+os.chdir("./run_the_model")
 
-# pytopkapi.run('run_the_model/TOPKAPI.ini')
+pytopkapi.run('TOPKAPI.ini')
 
 plot_Qsim_Qobs_Rain.run('plot-flow-precip.ini')
 
