@@ -1,7 +1,6 @@
 name: pytopkapi
 dependencies:
 - h5py=2.6.0=np111py27_1
-- hdf5=1.8.16=0
 - mkl=11.3.3=0
 - numexpr=2.5.2=np111py27_1
 - numpy=1.11.0=py27_1
