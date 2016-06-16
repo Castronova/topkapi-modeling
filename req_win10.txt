@@ -1,0 +1,21 @@
+name: C:\Anaconda2\envs\pytopkapi
+dependencies:
+- bzip2=1.0.6=vc9_3
+- h5py=2.6.0=np111py27_1
+- hdf5=1.8.16=vc9_0
+- mkl=11.3.3=1
+- numexpr=2.5.2=np110py27_1
+- numpy=1.11.0=py27_1
+- pip=8.1.2=py27_0
+- pytables=3.2.2=np110py27_2
+- python=2.7.11=4
+- scipy=0.17.1=np111py27_0
+- setuptools=23.0.0=py27_0
+- six=1.10.0=py27_0
+- vs2008_runtime=9.00.30729.1=1
+- vs2010_runtime=10.00.40219.1=1
+- wheel=0.29.0=py27_0
+- zlib=1.2.8=vc9_3
+- pip:
+  - tables==3.2.2
+
