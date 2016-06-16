@@ -1,0 +1,48 @@
+## Build environment from requirements
+
+`conda env create -n pytopkapi --file=req.txt`
+
+
+
+## Build environment from scratch
+
+1. Create a conda environment for pytopkapi
+
+`conda create -n pytopkapi python=2`
+
+2. Activate the library
+
+**OSX/Linux**  
+`source activate pytopkapi`
+
+**Windows**  
+`activate pytopkapi`
+
+3. Install requirements
+
+```
+conda install -y h5py pytables scipy
+
+```
+
+
+
+topkapi- modeling
+ - PyTOPKAPI  (fork)
+ - simulations 
+   - RBC
+   - BEAR
+   - etc ...
+
+ - preprocessing
+   - ArcGIS
+   - GDAL/TAUDEM
+
+ - Data (long term data)
+   - SURRGO
+   - STATSGO
+
+ readme
+ notes
+
+
