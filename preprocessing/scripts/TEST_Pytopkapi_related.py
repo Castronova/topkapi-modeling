@@ -34,7 +34,7 @@ def compare_rainfall_file(example_rain, simulation_rain):
 
 
 
-eg_rain = r"C:\Users\WIN10-HOME\OneDrive\Public\topkapi-modeling\PyTOPKAPI\example_simulation\forcing_variables\rainfields.h5"
-sim_rain = r"C:\Users\WIN10-HOME\OneDrive\Public\topkapi-modeling\simulations\Test_configParser\run_the_model\forcing_variables\rainfields_RBC.h5"
+eg_rain = "../../PyTOPKAPI/example_simulation/forcing_variables/rainfields.h5"
+sim_rain = "../../simulations/RBC/run_the_model/forcing_variables/rainfields_RBC.h5"
 
 compare_rainfall_file(eg_rain, sim_rain)
