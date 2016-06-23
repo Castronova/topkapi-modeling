@@ -1,6 +1,10 @@
 import os
 import h5py
 import tables as h5
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.set_printoptions(formatter={'float': '{: 0.5f}'.format})
 
 def compare_rainfall_file(example_rain, simulation_rain):
     """
@@ -32,9 +36,26 @@ def compare_rainfall_file(example_rain, simulation_rain):
 
     return
 
+def check_hdf5(hdf5_filename):
+    with  h5py.File(hdf5_filename , "r") as f:
+
+        print "The groups in the h5 files are: "
+        for group in f.keys():
+            print "\t\t" , group,
+        # print items / tables inside the group
+
+        for group in f.keys():
+            print "\n the Items in the group %s are:"%group
+            for table in f[group]:
+                print "\t\t" , table
+
+                print np.unique(f[group][table])
+                plt.hist(f[group][table])
+                plt.show()
 
 
 eg_rain = "../../PyTOPKAPI/example_simulation/forcing_variables/rainfields.h5"
+eg_ET = "../../PyTOPKAPI/example_simulation/forcing_variables/ET.h5"
 sim_rain = "../../simulations/RBC/run_the_model/forcing_variables/rainfields_RBC.h5"
 
-compare_rainfall_file(eg_rain, sim_rain)
+check_hdf5(eg_rain)
