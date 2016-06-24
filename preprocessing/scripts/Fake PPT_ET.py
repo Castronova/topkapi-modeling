@@ -11,7 +11,7 @@ ET_outputFile = os.path.join(path, "ET_RBC.h5")
 
 time_step = 20 #161
 no_of_cell = 19765
-rainfall_intensity_perUnitTime = 30 #mm
+rainfall_intensity_perUnitTime = 10 #mm
 
 with h5py.File(rainfall_outputFile,'w') as f2:
     f2.create_group('sample_event')
