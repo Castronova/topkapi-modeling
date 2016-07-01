@@ -48,17 +48,18 @@ def check_hdf5(hdf5_filename):
             print "\n the Items in the group %s are:"%group
             try:
                 for table in f[group]:
-                    print "\t\t" , table
+                    if table == 'Qc_out':
+                        print "\t\t" , table
 
-                    print np.unique(f[group][table])
-                    plt.hist(f[group][table])
-                    #plt.show()
+                        print np.unique(f[group][table])
+                        plt.hist(f[group][table])
+                        plt.show()
             except:
                 pass
 
 eg_rain = "../../PyTOPKAPI/example_simulation/forcing_variables/rainfields.h5"
 eg_ET = "../../PyTOPKAPI/example_simulation/forcing_variables/ET.h5"
-sim_rain = "../../simulations/RBC/run_the_model/forcing_variables/rainfields_RBC.h5"
-result = "../../simulations/RBC_2/run_the_model/results/results.h5"
+sim_rain = "../../simulations/Onion_1/run_the_model/forcing_variables/rainfields.h5"
+result = "../../simulations/Onion_1/run_the_model/results/results.h5"
 
 check_hdf5(result)

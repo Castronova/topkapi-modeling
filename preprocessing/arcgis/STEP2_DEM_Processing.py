@@ -33,7 +33,9 @@ DEM_fullpath = arcpy.GetParameterAsText(0)             # raster layer
 land_use_fullpath = arcpy.GetParameterAsText(1)        # raster layer
 outDir= arcpy.GetParameterAsText(2)
 outlet_fullpath = arcpy.GetParameterAsText(3)          # feature layer
-threshold = arcpy.GetParameterAsText(4)
+area_threshold = arcpy.GetParameterAsText(4)
+cell_size = arcpy.GetParameterAsText(5)
+outCS = arcpy.GetParameterAsText(6)
 
 if DEM_fullpath == "":
     # inputs for standalone operation
@@ -41,40 +43,69 @@ if DEM_fullpath == "":
     land_use_fullpath = r"E:\Research Data\del\Downloads.gdb\Land_Use_Prj"
     outDir= r"E:\Research Data\del\New File Geodatabase.gdb"
     outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_outlet"
-    threshold = ""
+    area_threshold = ""
+    cell_size = ""
+    outCS = ""
 
-def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpath, threshold):
+def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpath, area_threshold, cell_size, outCS):
     """
     :param DEM: Projected DEM (for now, projected to UTM zone 12)
     :param land_use: Projected Land_use raster from NLCD
     :param outDir: geodatabase where the rasters created are stored
     :param outlet_point_sf: the point shapefile for the outlet point
-    :param threshold: Threshold for defining stream
+    :param area_threshold: Area of Threshold for defining stream in km2
     :return:
     """
     arcpy.AddMessage("*** This scripts Processes the DEM and Landuse data *** ")
+    arcpy.env.overwriteOutput = True
+    arcpy.CheckOutExtension("Spatial")  # turns on spatial extension, required if run as standalone script
+    arcpy.env.workspace = outDir
 
-    arcpy.MakeRasterLayer_management(DEM_fullpath, "DEM_lyr",  "#", "", "1")
-    arcpy.MakeRasterLayer_management(land_use_fullpath, "LU_lyr",  "#", "", "1")
+
+    # If no projection defined
+    if outCS == "":
+        outCS =  arcpy.SpatialReference("North America Albers Equal Area Conic")
+    arcpy.env.outputCoordinateSystem = outCS
 
     # make feature layer
     outlet_point_sf = os.path.basename(outlet_fullpath)
     arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
 
-    arcpy.CheckOutExtension("Spatial")  # turns on spatial extension, required if run as standalone script
-    arcpy.env.workspace = outDir
+        # newly added
+    # if cell size given, need to resample here
+    if cell_size != "":
+        """ resample to the user specified resolution """
+        arcpy.ProjectRaster_management(in_raster=DEM_fullpath, out_raster="DEM_temp", out_coor_system=outCS)
+        arcpy.Resample_management(in_raster= "DEM_temp",
+                                  out_raster= "DEM_Prj",
+                                  cell_size= str(cell_size)+" "+str(cell_size), resampling_type="NEAREST")
+
+
+        arcpy.ProjectRaster_management(in_raster=land_use_fullpath, out_raster="Landuse_temp", out_coor_system=outCS)
+        arcpy.Resample_management(in_raster= "Landuse_temp",
+                                  out_raster= "Land_Use_Prj",
+                                  cell_size=str(cell_size)+" "+str(cell_size), resampling_type="NEAREST")
+
+
+        DEM_fullpath = os.path.join(outDir , "DEM_Prj")
+        land_use_fullpath= os.path.join(outDir , "Land_Use_Prj")
+
+        arcpy.AddMessage("************Resample DEM and Land Use with cell size %s m completed ************"%cell_size)
+
+
+
+    arcpy.MakeRasterLayer_management(DEM_fullpath, "DEM_lyr",  "#", "", "1")
+    arcpy.MakeRasterLayer_management(land_use_fullpath, "LU_lyr",  "#", "", "1")
 
     # Set workspace environment, and some defaults
     arcpy.env.snapRaster = DEM_fullpath           # Set Snap Raster environment
-    arcpy.env.overwriteOutput = True
 
     cellSize = arcpy.Describe("DEM_lyr").children[0].meanCellHeight
 
-
     # set default threshold value for stream definition
-    if threshold == "": # threshold = "3000"
+    if area_threshold == "": # threshold = "3000"
         area_threshold = 1 #km2
-        threshold = int (area_threshold / ( (cellSize)/1000. )**2)
+    threshold = int (float(area_threshold) / ( (cellSize)/1000. )**2)
 
     # DEM processing: Fill> fdr> fac> slope> stream> watershed
     Fill("DEM_lyr").save("fel")
@@ -178,5 +209,5 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     except Exception, e:
         print(arcpy.GetMessages())
 if __name__ == "__main__":
-    step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpath, threshold)
+    step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpath, area_threshold, cell_size, outCS)
 

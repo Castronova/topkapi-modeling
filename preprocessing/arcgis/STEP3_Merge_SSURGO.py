@@ -165,12 +165,12 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
             # remove duplicate Soil group elements
             # may be replacement is not advisable. Need to double check on this
 
-            muaggat= muaggat.replace("A/B", "A")
-            muaggat=muaggat.replace("A/C", "A")
+            muaggat= muaggat.replace("A/B", "B")
+            muaggat=muaggat.replace("A/C", "C")
             muaggat=muaggat.replace("B/D", "D")
-            muaggat=muaggat.replace("B/C", "B")
-            muaggat=muaggat.replace("B/D", "B")
-            muaggat=muaggat.replace("C/D", "C")
+            muaggat=muaggat.replace("B/C", "C")
+            muaggat=muaggat.replace("B/D", "D")
+            muaggat=muaggat.replace("C/D", "D")
 
             muaggat.to_csv(os.path.join(path2_ssurgo_or_statsgo, folder,"tabular", "muaggatt_Removed_HydrGRP.csv"), index=False)
 

@@ -17,7 +17,7 @@ wshedBoundary = arcpy.GetParameterAsText(3)     # Bounding Box, as layer
 bufferDi= arcpy.GetParameterAsText(4)
 cell_size = arcpy.GetParameterAsText(5)
 outlet_fullpath = arcpy.GetParameterAsText(6)   # as layer again
-threshold = arcpy.GetParameterAsText(7)         # Threshold for defining stream
+areaThreshold = arcpy.GetParameterAsText(7)     # Threshold for defining stream in km2
 path2ssurgoFolders = arcpy.GetParameterAsText(8)
 path2statsgoFolders = arcpy.GetParameterAsText(9)
 outCS = arcpy.GetParameterAsText(10)
@@ -26,7 +26,7 @@ outCS = arcpy.GetParameterAsText(10)
 if projDir == "":
 
     # initializing
-    ini_fname = "./Pytopkapi_simulation.ini"
+    ini_fname = "./Onion_simulation.ini"
     config = SafeConfigParser()
     config.read(ini_fname)
 
@@ -40,7 +40,7 @@ if projDir == "":
     wshedBoundary = config.get('input_files', 'wshedBoundary')
 
     # path to other variables
-    threshold = config.get('other_parameter', 'threshold')
+    areaThreshold = config.get('other_parameter', 'areaThreshold')
     inUsername = config.get('other_parameter', 'inUsername')
     inPassword = config.get('other_parameter', 'inPassword')
     bufferDi = config.get('other_parameter', 'bufferDi')
@@ -88,13 +88,18 @@ arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
 
 if download_data.lower() == 'true':
     # Step1, download the data
-    step1_get_dem_landuse(inUsername,inPassword,downloads_outDir ,wshedBoundary,bufferDi,cell_size, outCS)
+    step1_get_dem_landuse(inUsername,inPassword,downloads_outDir ,wshedBoundary,bufferDi, outCS)
 
 if process_dem.lower() == 'true':
     # Step2
     DEM_fullpath = os.path.join(downloads_outDir, "DEM_Prj")
     land_use_fullpath = os.path.join(downloads_outDir, "Land_Use_Prj")
-    step2_dem_processing(DEM_fullpath, land_use_fullpath ,raw_files_outDir , outlet_fullpath, threshold)
+
+    if download_data.lower() == 'false':
+        DEM_fullpath = os.path.join(downloads_outDir, "DEM")
+        land_use_fullpath = os.path.join(downloads_outDir, "Land_Use")
+
+    step2_dem_processing(DEM_fullpath, land_use_fullpath ,raw_files_outDir , outlet_fullpath, areaThreshold,cell_size, outCS)
 
 if extract_ssurgo_data.lower() == 'true':
     # Step3
@@ -115,7 +120,7 @@ if merge_ssurgo_to_raster.lower() == 'true':
 for outRaster in ["mask_r", "DEM_Prj_fc",  "n_Overland", "n_Channel", "fdr_cr" , "slope_c", "SD", "str_c", "str_cr9999", "str_cr255"]:
     arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(raw_files_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
 
-for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "rsm-tc.tif" ]:
+for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "por-tc.tif", "rsm-tc.tif" ]:
     arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(ssurgo_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
 
 # delete unnecessary files

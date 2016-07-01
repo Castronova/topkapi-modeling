@@ -33,11 +33,11 @@ def STEP4_Join_Merge_Export (path2_ssurgo, path2statsgo, outDir,MaskRaster_fullp
     soilProperties = [["ksat_r_WtAvg", "KSAT-s", "MUKEY_Vs_2" ],
                    ["Ks_WtAvg", "KSAT-t", "MUKEY_Vs_3" ],
                    ["ResidualWaterContent_WtAvg", "RSM-t", "MUKEY_Vs_6" ],
-                   ["Porosity_WtAvg","POR-t_", "MUKEY_Vs_7" ],
+                   ["Porosity_WtAvg","POR-t", "MUKEY_Vs_7" ],
                    ["EffectivePorosity_WtAvg","EFPO-t", "MUKEY_Vs_8"  ] ,
                    ["BubblingPressure_Geometric_WtAvg", "BBL-t", "MUKEY_Vs_9" ] ,
                    ["PoreSizeDistribution_geometric_WtAvg_y","PSD-t", "MUKEY_V_10"],
-                   ["HydroGrp", "HSG_soil", "MUKEY_V_12"]
+                   ["HydroGrp", "HSG-soil", "MUKEY_V_12"]
                    ]
 
     # mxd = arcpy.mapping.MapDocument("CURRENT")

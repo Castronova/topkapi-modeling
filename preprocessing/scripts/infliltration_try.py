@@ -1,7 +1,8 @@
 import math
 
 def green_ampt_cum_infiltration(rain, psi, eff_theta,eff_sat, K, dt):
-    no_of_loops_to_solve = max(dt, 1000)
+    import math
+    no_of_loops_to_solve = max(dt, 1000.0)
     psi = abs(psi)
     con = psi * (eff_sat - eff_theta)
     if rain == 0:
@@ -19,7 +20,7 @@ def green_ampt_cum_infiltration(rain, psi, eff_theta,eff_sat, K, dt):
             F = dt * rain
         else:
             lowest_error = 1000
-            for i in range(1,no_of_loops_to_solve):
+            for i in range(1,int(no_of_loops_to_solve)):
                 # i is rain multiplied by 1000
                 F_guess = i/float(no_of_loops_to_solve) * rain*dt
                 t_guess = t_p + 1/K * (F_guess - F_p + con * math.log((con+F_p)/(con + F_guess)) )
@@ -31,8 +32,9 @@ def green_ampt_cum_infiltration(rain, psi, eff_theta,eff_sat, K, dt):
                     F = F_guess
                     if error < 1:
                         break
+    if F is None:
+        return F_guess
     return F
-
 
 # RBC_simulation
 rain = 50
