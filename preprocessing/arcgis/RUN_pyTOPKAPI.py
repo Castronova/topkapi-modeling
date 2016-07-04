@@ -2,8 +2,12 @@ import os
 import ConfigParser
 from ConfigParser import SafeConfigParser
 import shutil
+import numpy as np
+import sys, datetime
+sys.path.append('../../PyTOPKAPI')
+import pytopkapi
 
-def create_config_files_create_file(simulation_folder, tiff_folder,pVs_t0=90., Vo_t0=9000., Qc_t0=0, Kc=1 ):
+def create_config_files_create_file(simulation_folder, tiff_folder,pVs_t0=90., Vo_t0=1000., Qc_t0=0, Kc=1 ):
     if not os.path.exists(simulation_folder):
         os.makedirs(simulation_folder)
 
@@ -60,19 +64,19 @@ def create_config_files_zero_slope_mngmt(simulation_folder, cell_size=30.9220807
 
     return
 
-def create_config_files_plot_flow_precip(simulation_folder, outlet_ID ,calibration_start_data='01/01/2015' ):
+def create_config_files_plot_flow_precip(simulation_folder,path_to_runoff_file, outlet_ID ,calibration_start_data='01/01/2015' ):
     if not os.path.exists(simulation_folder+"/results"):
         os.makedirs(simulation_folder+"/results")
 
     configWrite = ConfigParser.RawConfigParser()
     configWrite.add_section('files')
-    configWrite.set('files', 'file_Qsim', '/results/results.h5')
-    configWrite.set('files', 'file_Qobs', '/Runoff.dat')
-    configWrite.set('files', 'file_rain', '/rainfields.h5')
-    configWrite.set('files', 'image_out', '/results')
+    configWrite.set('files', 'file_Qsim', simulation_folder+'/results/results.h5')
+    configWrite.set('files', 'file_Qobs',  path_to_runoff_file)
+    configWrite.set('files', 'file_rain', simulation_folder+'/rainfields.h5')
+    configWrite.set('files', 'image_out', simulation_folder+'/results')
 
     configWrite.add_section('groups')
-    configWrite.set('groups', 'file_cell_param_out','cell_param.dat')
+    configWrite.set('groups', 'group_name','sample_event')
 
 
     configWrite.add_section('parameters')
@@ -104,9 +108,9 @@ def create_config_files_plot_soil_moisture_map(simulation_folder,t1=1, t2=5, var
 
     configWrite = ConfigParser.RawConfigParser()
     configWrite.add_section('files')
-    configWrite.set('files', 'file_global_param', 'global_param.dat')
-    configWrite.set('files', 'file_cell_param', 'cell_param.dat')
-    configWrite.set('files', 'file_sim', '/results/results.h5')
+    configWrite.set('files', 'file_global_param', simulation_folder+'/global_param.dat')
+    configWrite.set('files', 'file_cell_param', simulation_folder+'/cell_param.dat')
+    configWrite.set('files', 'file_sim', simulation_folder+'/results/results.h5')
 
     configWrite.add_section('paths')
     configWrite.set('paths', 'path_out', simulation_folder +"/SM")
@@ -123,7 +127,7 @@ def create_config_files_plot_soil_moisture_map(simulation_folder,t1=1, t2=5, var
     configWrite.set('flags', 't2', t2)
     configWrite.set('flags', 'variable', variable)
 
-    with open(os.path.join(simulation_folder,'plot-soil-moisture-map.ini'), 'wb') as configFile:
+    with open(os.path.join(simulation_folder,'plot-soil-moisture-maps.ini'), 'wb') as configFile:
         configWrite.write(configFile)
 
     return
@@ -260,6 +264,168 @@ def get_outletID_noOfCell(cell_para_file):
     # outlet_ID is the first element (cell lable) of parameter for the cell whose d/s id = -999
     outlet_ID = cell_param_array[cell_param_array[:,14] < -99][0][0]
     return int(outlet_ID), no_of_cell
+
+def check_hdf5(hdf5_filename):
+    import h5py
+    import matplotlib.pyplot as plt
+
+    with  h5py.File(hdf5_filename , "r") as f:
+
+        print "The groups in the h5 files are: "
+        for group in f.keys():
+            print "\t\t" , group,
+        # print items / tables inside the group
+
+        for group in f.keys():
+            print "\n the Items in the group %s are:"%group
+            try:
+                for table in f[group]:
+                    # if table == 'Qc_out':
+                    print "\t\t" , table
+
+                    print 'The size of the hdf5 table is ', f[group][table].shape
+                    print 'And, the unique values in the tables are: \n'
+                    print np.unique(f[group][table])
+
+                    values_in_1D = f[group][table][:].reshape(-1)
+                    plt.hist(values_in_1D,bins=20)
+                    plt.show()
+            except:
+                pass
+
+def plot_sim_observed(simulation_folder, image_out, file_Qobs, outlet_ID):
+
+    import pytopkapi.utils as ut
+    from pytopkapi.results_analysis import plot_Qsim_Qobs_Rain as pt
+    import matplotlib.pyplot as plt
+    from matplotlib.dates import date2num
+
+    file_Qsim= simulation_folder + "/results/results.h5"
+    group_name= 'sample_event'
+    Qobs= True
+    Pobs= False
+    nash= True
+
+    tab_col=['k','r']
+    tab_style=['-','-']
+    tab_width=['1','1']
+    color_P='b'
+    transparency_P=0.5#(0 for invisible)
+
+    #create path_out if it does'nt exist
+    ut.check_file_exist(image_out)
+
+    #Read the obs
+    #Qobs
+    ar_date, ar_Qobs = pt.read_observed_flow(file_Qobs)
+
+    delta = date2num(ar_date[1]) - date2num(ar_date[0])
+
+    #Rain
+    if Pobs:
+        h5file = h5py.File(file_rain)
+
+        dset_string = '/%s/rainfall' % group_name
+        ndar_rain = h5file[dset_string][...]
+
+        h5file.close()
+        #Compute the mean catchment rainfall
+        ar_rain=np.average(ndar_rain,axis=1)
+
+    #Read the simulated data Q
+    file_h5=file_Qsim
+    ndar_Qc_out=ut.read_one_array_hdf(file_h5,'Channel','Qc_out')
+    ar_Qsim=ndar_Qc_out[1:,outlet_ID]
+
+    ##Graph
+    fig, ax = plt.subplots()
+
+    lines = []
+    tab_leg = []
+    if Qobs:
+        lines += ax.plot(ar_date, ar_Qobs,
+                         color=tab_col[-1],
+                         linestyle=tab_style[-1], linewidth=tab_width[-1])
+        tab_leg.append(('Observation'))
+        tab_leg = tab_leg[::-1]
+
+    lines += ax.plot(ar_date, ar_Qsim,
+                     color=tab_col[0],
+                     linestyle=tab_style[0], linewidth=tab_width[0])
+    tab_leg.append('Model')
+
+    if nash:
+        nash_value = ut.Nash(ar_Qsim,ar_Qobs)
+        lines += ax.plot(ar_date[0:1], ar_Qsim[0:1], 'w:')
+        tab_leg.append(('Eff = '+str(nash_value)[0:5]))
+
+    ax.set_xlim(ar_date[0], ar_date[-1])
+    ytitle=r'$Q \  (m^3/s)$'
+    ax.set_ylabel(ytitle, fontsize=18)
+    ax.set_title(group_name)
+
+    ax2 = ax.twinx()
+
+    # ax2.set_ylabel(r'$Rainfall \ (mm)$', fontsize=18, color=color_P)
+    # ax2.bar(ar_date, ar_rain, width=delta,
+    #         facecolor='blue', edgecolor='blue', alpha=transparency_P)
+    # ax2.set_ylim(max(ar_rain)*2, min(ar_rain))
+
+    ax2.legend(lines, tab_leg, loc='upper right', fancybox=True)
+    leg = ax2.get_legend()
+    leg.get_frame().set_alpha(0.75)
+
+    # rotate and align the tick labels so they look better,
+    # unfortunately autofmt_xdate doesn't work with twinx due to a bug
+    # in matplotlib <= 1.0.0 so we do it manually
+    ## fig.autofmt_xdate()
+
+    bottom=0.2
+    rotation=30
+    ha='right'
+
+    for ax in fig.get_axes():
+        if hasattr(ax, 'is_last_row') and ax.is_last_row():
+            for label in ax.get_xticklabels():
+                label.set_ha(ha)
+                label.set_rotation(rotation)
+        else:
+            for label in ax.get_xticklabels():
+                label.set_visible(False)
+            ax.set_xlabel('')
+
+    fig.subplots_adjust(bottom=bottom)
+
+    fig.savefig(image_out)
+    #plt.show()
+
+    return nash, ar_Qsim
+
+
+def calibrate_model(run_name, calibration_parameters,simulation_folder, outlet_ID, runoff_file):
+    """
+    Parameters
+    ----------
+    calibration_parameters: a list, of calibration parameters. [fac_L, fac_Ks, fac_n_o, fac_n_c, fac_th_s]
+    simulation_folder: folder where results and everything are there
+
+    Returns: a list. [Runname, date_time, nash value,\t, [Q_sim]]
+    -------
+    """
+    fac_L = calibration_parameters[0]
+    fac_Ks = calibration_parameters[1]
+    fac_n_o = calibration_parameters[2]
+    fac_n_c = calibration_parameters[3]
+    fac_th_s = calibration_parameters[4]
+
+     # run the program now
+    create_config_files_TOPKAPI_ini(simulation_folder,'False','False',fac_L,fac_Ks, fac_n_o, fac_n_c, fac_th_s)
+    pytopkapi.run(topkapi_simulation_folder+'/TOPKAPI.ini')
+
+    nash,ar_Q_sim = plot_sim_observed(topkapi_simulation_folder, topkapi_simulation_folder+"/results/calibration/"+run_name, runoff_file, outlet_ID)
+
+    return nash, ar_Q_sim
+
 
 def step0(ini_fname):
     import arcpy
@@ -426,36 +592,61 @@ if __name__ == '__main__':
     topkapi_simulation_folder = "E:/trial_sim"
     tiff_folder = '../../simulations/Onion_1/create_the_parameter_files/TIFFS_500'
     daily_ppt_file = "../../simulations/Onion_1/run_the_model/forcing_variables/ppt.txt"
+    runoff_file = "C:/Users/WIN10-HOME/OneDrive/Public/topkapi-modeling/simulations/Onion_1/run_the_model/forcing_variables/Runoff.dat"
+    cell_size = 500
 
+    # Download files, and create required input raster files
     # step0(initialize_fname)
 
-    # create_config_files_create_file(topkapi_simulation_folder,tiff_folder)
+
+    # create_config_files_create_file(topkapi_simulation_folder,tiff_folder,pVs_t0=90., Vo_t0=1000.)
     # create_global_param(topkapi_simulation_folder, A_thres=25000000, X=500, Dt=86400, W_min=1., W_Max=10.)
-    # create_config_files_zero_slope_mngmt(topkapi_simulation_folder, 500)
+    # create_config_files_zero_slope_mngmt(topkapi_simulation_folder, cell_size)
     #
     # create_cell_param( topkapi_simulation_folder+'/create_file.ini', topkapi_simulation_folder+'/zero_slope_management.ini')
     #
     # outletID, no_of_cell = get_outletID_noOfCell(os.path.join(topkapi_simulation_folder,"cell_param.dat"))
     #
     #
-    # create_config_files_plot_flow_precip(topkapi_simulation_folder, outletID ,calibration_start_data='01/01/2015' )
-    # create_config_files_plot_soil_moisture_map(topkapi_simulation_folder,t1=1, t2=5, variable=4, fac_L=1., fac_Ks=1., fac_n_o=1., fac_n_c=1. )
+    # create_config_files_plot_flow_precip(topkapi_simulation_folder,runoff_file, outletID ,calibration_start_data='01/01/2015' )
+    # create_config_files_plot_soil_moisture_map(topkapi_simulation_folder,t1=1, t2=2, variable=4, fac_L=1., fac_Ks=1., fac_n_o=1., fac_n_c=1. )
     #
     # # create_cell_param( topkapi_simulation_folder+"/create_file.ini", topkapi_simulation_folder+'/zero_slope_management.ini')
-    # create_global_param(topkapi_simulation_folder, A_thres=25000000, X=30.92208078, Dt=86400, W_min=1., W_Max=10.) # better to have in inside step0
+    # create_global_param(topkapi_simulation_folder, A_thres=25000000, X=cell_size, Dt=86400, W_min=1., W_Max=10.) # better to have in inside step0
     # create_rain_ET_file(topkapi_simulation_folder, total_no_of_cell=no_of_cell,ppt_file_txt= daily_ppt_file )
     #
     # create_config_files_TOPKAPI_ini(topkapi_simulation_folder, append_output_binary = 'False',fac_L = 1.4, fac_Ks = 1. ,fac_n_o  = 1. ,fac_n_c  = 1., fac_th_s = 1 )
 
     # run the program now
-    import sys
-    sys.path.append('../../PyTOPKAPI')
-    import pytopkapi
 
-    pytopkapi.run(topkapi_simulation_folder+'/TOPKAPI.ini')
+    # pytopkapi.run(topkapi_simulation_folder+'/TOPKAPI.ini')
 
-    # plot
-    from pytopkapi.results_analysis import plot_Qsim_Qobs_Rain, plot_soil_moisture_maps
+    # # plot
+    # from pytopkapi.results_analysis import plot_Qsim_Qobs_Rain, plot_soil_moisture_maps
+    #
+    # # Plot the hydrograph
+    # plot_Qsim_Qobs_Rain.run(topkapi_simulation_folder+'/plot-flow-precip.ini')
+    #
+    # # # Plot soil moisture
+    # plot_soil_moisture_maps.run(topkapi_simulation_folder+'/plot-soil-moisture-maps.ini')
 
-    # Plot the hydrograph
-    plot_Qsim_Qobs_Rain.run(topkapi_simulation_folder+'/plot-flow-precip.ini')
+
+    calibrate_model("Run-0", [1,1,1,1,1],topkapi_simulation_folder, 1292, runoff_file)
+
+    ## open(topkapi_simulation_folder+"/results/calibration/run_log.txt", 'a').close()
+    calib_factor_range = [x/10. for x in range(1,30,5)]
+    i = 1
+    for fac_L in  calib_factor_range:
+        for fac_Ks in calib_factor_range:
+           for fac_n_o in  [1]:
+                for fac_n_c in [1]:
+                    for fac_th_s in [1]:
+                        calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
+                        run_name = "RUN-"+ str(i)
+                        print run_name, '\t', calib_param
+
+                        calibrate_model(run_name,calib_param,topkapi_simulation_folder, 1292, runoff_file)
+                        with open(topkapi_simulation_folder+'/results/calibration/run_log.txt', "a+") as run_log:
+                            run_log.write('\n'+run_name + '\t'+ "-".join(str(item) for item in calib_param) + '\t\tQ_sim: ' + " ".join(str(item) for item in [1,2,3]))
+
+                        i = i +1
