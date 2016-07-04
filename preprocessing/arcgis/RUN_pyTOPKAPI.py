@@ -399,7 +399,7 @@ def plot_sim_observed(simulation_folder, image_out, file_Qobs, outlet_ID):
     fig.savefig(image_out)
     #plt.show()
 
-    return nash, ar_Qsim
+    return str(nash_value)[0:5], ar_Qsim
 
 
 def calibrate_model(run_name, calibration_parameters,simulation_folder, outlet_ID, runoff_file):
@@ -589,36 +589,35 @@ def step0(ini_fname):
 
 if __name__ == '__main__':
     initialize_fname = "./Onion_simulation.ini"
-    topkapi_simulation_folder = "E:/trial_sim"
+    topkapi_simulation_folder = "../../simulations/Onion_simulations_calibration/"
     tiff_folder = '../../simulations/Onion_1/create_the_parameter_files/TIFFS_500'
     daily_ppt_file = "../../simulations/Onion_1/run_the_model/forcing_variables/ppt.txt"
-    runoff_file = "C:/Users/WIN10-HOME/OneDrive/Public/topkapi-modeling/simulations/Onion_1/run_the_model/forcing_variables/Runoff.dat"
+    runoff_file = "../../simulations/Onion_1/run_the_model/forcing_variables/Runoff.dat"
     cell_size = 500
 
     # Download files, and create required input raster files
     # step0(initialize_fname)
 
 
-    # create_config_files_create_file(topkapi_simulation_folder,tiff_folder,pVs_t0=90., Vo_t0=1000.)
+    create_config_files_create_file(topkapi_simulation_folder,tiff_folder,pVs_t0=90., Vo_t0=1000.)
     # create_global_param(topkapi_simulation_folder, A_thres=25000000, X=500, Dt=86400, W_min=1., W_Max=10.)
-    # create_config_files_zero_slope_mngmt(topkapi_simulation_folder, cell_size)
-    #
-    # create_cell_param( topkapi_simulation_folder+'/create_file.ini', topkapi_simulation_folder+'/zero_slope_management.ini')
-    #
-    # outletID, no_of_cell = get_outletID_noOfCell(os.path.join(topkapi_simulation_folder,"cell_param.dat"))
-    #
-    #
-    # create_config_files_plot_flow_precip(topkapi_simulation_folder,runoff_file, outletID ,calibration_start_data='01/01/2015' )
-    # create_config_files_plot_soil_moisture_map(topkapi_simulation_folder,t1=1, t2=2, variable=4, fac_L=1., fac_Ks=1., fac_n_o=1., fac_n_c=1. )
-    #
-    # # create_cell_param( topkapi_simulation_folder+"/create_file.ini", topkapi_simulation_folder+'/zero_slope_management.ini')
-    # create_global_param(topkapi_simulation_folder, A_thres=25000000, X=cell_size, Dt=86400, W_min=1., W_Max=10.) # better to have in inside step0
-    # create_rain_ET_file(topkapi_simulation_folder, total_no_of_cell=no_of_cell,ppt_file_txt= daily_ppt_file )
-    #
-    # create_config_files_TOPKAPI_ini(topkapi_simulation_folder, append_output_binary = 'False',fac_L = 1.4, fac_Ks = 1. ,fac_n_o  = 1. ,fac_n_c  = 1., fac_th_s = 1 )
+    create_config_files_zero_slope_mngmt(topkapi_simulation_folder, cell_size)
 
-    # run the program now
+    #create_cell_param( topkapi_simulation_folder+'/create_file.ini', topkapi_simulation_folder+'/zero_slope_management.ini')
 
+    outletID, no_of_cell = get_outletID_noOfCell(os.path.join(topkapi_simulation_folder,"cell_param.dat"))
+
+
+    create_config_files_plot_flow_precip(topkapi_simulation_folder,runoff_file, outletID ,calibration_start_data='01/01/2015' )
+    create_config_files_plot_soil_moisture_map(topkapi_simulation_folder,t1=1, t2=2, variable=4, fac_L=1., fac_Ks=1., fac_n_o=1., fac_n_c=1. )
+
+    # create_cell_param( topkapi_simulation_folder+"/create_file.ini", topkapi_simulation_folder+'/zero_slope_management.ini')
+    create_global_param(topkapi_simulation_folder, A_thres=25000000, X=cell_size, Dt=86400, W_min=1., W_Max=10.) # better to have in inside step0
+    create_rain_ET_file(topkapi_simulation_folder, total_no_of_cell=no_of_cell,ppt_file_txt= daily_ppt_file )
+
+    create_config_files_TOPKAPI_ini(topkapi_simulation_folder, append_output_binary = 'False',fac_L = 1.4, fac_Ks = 1. ,fac_n_o  = 1. ,fac_n_c  = 1., fac_th_s = 1 )
+
+    # # run the program now
     # pytopkapi.run(topkapi_simulation_folder+'/TOPKAPI.ini')
 
     # # plot
@@ -629,24 +628,32 @@ if __name__ == '__main__':
     #
     # # # Plot soil moisture
     # plot_soil_moisture_maps.run(topkapi_simulation_folder+'/plot-soil-moisture-maps.ini')
+    #
+
+    #calibrate_model("Run-0", [1,1,1,1,1],topkapi_simulation_folder, 1292, runoff_file)
+
+    # open(topkapi_simulation_folder+"/results/calibration/run_log.txt", 'a').close()
+    # calib_factor_range = [x/100. for x in range(10,300,50)]
+    # i = 1
+    # for fac_L in  [2.5]:
+    #     for fac_Ks in  [0.1,0.25]: #[x/100. for x in range(10,25,10)]:
+    #        for fac_n_o in  [0.25,0.5,1,1.5]:
+    #             for fac_n_c in [0.25,0.5,1,1.5]:
+    #                 for fac_th_s in [0.5,0.75,1.,1.35]:
+    #                     calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
+    #                     run_name = "RUN-"+ str(i)
+    #                     print run_name, '\t', calib_param
+    #
+    #                     nash, Q_sim = calibrate_model(run_name,calib_param,topkapi_simulation_folder, 1292, runoff_file)
+    #                     with open(topkapi_simulation_folder+'/results/calibration/run_log.txt', "a+") as run_log:
+    #                         run_log.write('\n'+run_name + '\t'+ "-".join(str(item) for item in calib_param)+ '\t'+ str(nash) + '\t\tQ_sim: ' + " ".join(str(item) for item in Q_sim))
+    #
+    #                     i = i +1
+
+    
 
 
-    calibrate_model("Run-0", [1,1,1,1,1],topkapi_simulation_folder, 1292, runoff_file)
 
-    ## open(topkapi_simulation_folder+"/results/calibration/run_log.txt", 'a').close()
-    calib_factor_range = [x/10. for x in range(1,30,5)]
-    i = 1
-    for fac_L in  calib_factor_range:
-        for fac_Ks in calib_factor_range:
-           for fac_n_o in  [1]:
-                for fac_n_c in [1]:
-                    for fac_th_s in [1]:
-                        calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
-                        run_name = "RUN-"+ str(i)
-                        print run_name, '\t', calib_param
 
-                        calibrate_model(run_name,calib_param,topkapi_simulation_folder, 1292, runoff_file)
-                        with open(topkapi_simulation_folder+'/results/calibration/run_log.txt', "a+") as run_log:
-                            run_log.write('\n'+run_name + '\t'+ "-".join(str(item) for item in calib_param) + '\t\tQ_sim: ' + " ".join(str(item) for item in [1,2,3]))
 
-                        i = i +1
+
