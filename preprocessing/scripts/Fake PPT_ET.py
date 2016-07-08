@@ -12,7 +12,7 @@ rainfall_outputFile = os.path.join(path, "rainfields.h5")
 ET_outputFile = os.path.join(path, "ET.h5")
 
 time_step = 59 #161
-no_of_cell = 19765 # 3400
+no_of_cell = 3400
 # rainfall_intensity_perUnitTime = 20 #mm
 rainfall_reduction_factor = 1
 

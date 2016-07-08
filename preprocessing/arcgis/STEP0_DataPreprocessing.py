@@ -133,24 +133,28 @@ for file in os.listdir(ssurgo_outDir):
         os.remove(os.path.join(ssurgo_outDir,file))
 
 # copy files
-# tif_folder = folder where tiff are supposed to be saved for pytopkapi
-# tif_outDir = folder where tiff are created by the script above
-if not os.path.exists(tiff_folder):
-    os.mkdir(tiff_folder)
-for file in os.listdir(tiffs_outDir):
-    shutil.copy(os.path.join(tiffs_outDir,file), tiff_folder)
+try:
+    # tif_folder = folder where tiff are supposed to be saved for pytopkapi
+    # tif_outDir = folder where tiff are created by the script above
+    if not os.path.exists(tiff_folder):
+        os.mkdir(tiff_folder)
+    for file in os.listdir(tiffs_outDir):
+        shutil.copy(os.path.join(tiffs_outDir,file), tiff_folder)
 
-# del downloaded files
-if del_downloaded_files.lower()== 'true':
-    shutil.rmtree(downloads_outDir, ignore_errors=True)
-    # for file in os.listdir(downloads_outDir):
-    #     os.remove(os.path.join(downloads_outDir, file))
-    # os.rmdir(downloads_outDir)
+    # del downloaded files
+    if del_downloaded_files.lower()== 'true':
+        shutil.rmtree(downloads_outDir, ignore_errors=True)
+        # for file in os.listdir(downloads_outDir):
+        #     os.remove(os.path.join(downloads_outDir, file))
+        # os.rmdir(downloads_outDir)
 
-# del DEM processed file
-if del_ssurgo_files.lower()== 'true':
-    shutil.rmtree(raw_files_outDir, ignore_errors=True)
+    # del DEM processed file
+    if del_ssurgo_files.lower()== 'true':
+        shutil.rmtree(raw_files_outDir, ignore_errors=True)
 
-# del SSURGO files
-if del_demProcessed_files.lower()== 'true':
-    shutil.rmtree(ssurgo_outDir, ignore_errors=True)
+    # del SSURGO files
+    if del_demProcessed_files.lower()== 'true':
+        shutil.rmtree(ssurgo_outDir, ignore_errors=True)
+except Exception, e:
+    arcpy.AddMessage( "FAILURE: Deleting temporary files. Error: %s"%e)
+

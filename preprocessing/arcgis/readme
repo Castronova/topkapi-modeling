@@ -14,11 +14,12 @@ DEM_processing_Tool		Preprocessing of DEM and Landuse data to create useful data
 [STEP2..]				{
 						Inputs: DEM, Landuse,draining outlet point shapefile, Personal Geodatabase
 						Output: files in the Geodatabase, projected in UTM  Zone 12
-								str_c_r   (stream network)
-								fdr_c_r   (flow direction)
+								str_cr   (stream network)
+								fdr_cr   (flow direction)
 								mask_r    (watershed area)
 								SD        (soil depth raster) 
-								n_channel,(Mannings coefficient for overland) 
+								n_channel,(Mannings coefficient for Channel) 
+								n_Overland (Mannings coefficient for overland)
 								drp_r     (slope or drop)
 								DEM_Prj_C} (DEM file)	
 								}

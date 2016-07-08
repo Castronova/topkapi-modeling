@@ -36,6 +36,7 @@ def compare_rainfall_file(example_rain, simulation_rain):
 
     return
 
+
 def check_hdf5(hdf5_filename):
     with  h5py.File(hdf5_filename , "r") as f:
 
@@ -48,18 +49,22 @@ def check_hdf5(hdf5_filename):
             print "\n the Items in the group %s are:"%group
             try:
                 for table in f[group]:
-                    if table == 'Qc_out':
-                        print "\t\t" , table
+                    # if table == 'Qc_out':
+                    print "\t\t" , table
 
-                        print np.unique(f[group][table])
-                        plt.hist(f[group][table])
-                        plt.show()
+                    print 'The size of the hdf5 table is ', f[group][table].shape
+                    print 'And, the unique values in the tables are: \n'
+                    print np.unique(f[group][table])
+
+                    values_in_1D = f[group][table][:].reshape(-1)
+                    plt.hist(values_in_1D,bins=20)
+                    plt.show()
             except:
                 pass
 
 eg_rain = "../../PyTOPKAPI/example_simulation/forcing_variables/rainfields.h5"
 eg_ET = "../../PyTOPKAPI/example_simulation/forcing_variables/ET.h5"
-sim_rain = "../../simulations/Onion_1/run_the_model/forcing_variables/rainfields.h5"
+sim_rain = "e:/trial_sim/rainfields.h5"
 result = "../../simulations/Onion_1/run_the_model/results/results.h5"
 
-check_hdf5(result)
+check_hdf5(sim_rain)

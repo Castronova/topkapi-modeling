@@ -40,7 +40,7 @@ outCS = arcpy.GetParameterAsText(6)
 if DEM_fullpath == "":
     # inputs for standalone operation
     DEM_fullpath = r"E:\Research Data\del\Downloads.gdb\DEM_Prj"
-    land_use_fullpath = r"E:\Research Data\del\Downloads.gdb\Land_Use_Prj"
+    land_use_fullpath = r"E:\Research Data\del\Downloads.gdb\LU_Prj"
     outDir= r"E:\Research Data\del\New File Geodatabase.gdb"
     outlet_fullpath = r"E:\Research Data\00 Red Butte Creek\RBC_point_Area\RawFiles.gdb\RBC_outlet"
     area_threshold = ""
@@ -75,22 +75,39 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     # if cell size given, need to resample here
     if cell_size != "":
         """ resample to the user specified resolution """
-        arcpy.ProjectRaster_management(in_raster=DEM_fullpath, out_raster="DEM_temp", out_coor_system=outCS)
-        arcpy.Resample_management(in_raster= "DEM_temp",
+
+        # arcpy.ProjectRaster_management(in_raster=DEM_fullpath,
+        #                                out_raster=outDir+"/DEM_Prj",
+        #                                out_coor_system= outCS ,
+        #                                resampling_type="NEAREST", cell_size="%s %s"%(cell_size, cell_size), geographic_transform="",
+        #                                Registration_Point="",
+        #                                in_coor_system = "")
+        #
+        #
+        # arcpy.ProjectRaster_management(in_raster=land_use_fullpath,
+        #                                out_raster=outDir+"/LU_Prj",
+        #                                out_coor_system=outCS,
+        #                                resampling_type="NEAREST", cell_size="%s %s" % (cell_size, cell_size),
+        #                                geographic_transform="",
+        #                                Registration_Point="",
+        #                                in_coor_system="")
+
+        # arcpy.ProjectRaster_management(in_raster=DEM_fullpath, out_raster="DEM_temp", out_coor_system=outCS)
+        arcpy.Resample_management(in_raster= DEM_fullpath,
                                   out_raster= "DEM_Prj",
                                   cell_size= str(cell_size)+" "+str(cell_size), resampling_type="NEAREST")
 
 
-        arcpy.ProjectRaster_management(in_raster=land_use_fullpath, out_raster="Landuse_temp", out_coor_system=outCS)
-        arcpy.Resample_management(in_raster= "Landuse_temp",
-                                  out_raster= "Land_Use_Prj",
+        # arcpy.ProjectRaster_management(in_raster=land_use_fullpath, out_raster="Landuse_temp", out_coor_system=outCS)
+        arcpy.Resample_management(in_raster= DEM_fullpath,
+                                  out_raster= "LU_Prj",
                                   cell_size=str(cell_size)+" "+str(cell_size), resampling_type="NEAREST")
 
 
         DEM_fullpath = os.path.join(outDir , "DEM_Prj")
-        land_use_fullpath= os.path.join(outDir , "Land_Use_Prj")
+        land_use_fullpath= os.path.join(outDir , "LU_Prj")
 
-        arcpy.AddMessage("************Resample DEM and Land Use with cell size %s m completed ************"%cell_size)
+        arcpy.AddMessage("SUCCESS: Resampling DEM and Land Use with cell size %s "%cell_size)
 
 
 
@@ -137,15 +154,15 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     ExtractByMask('fdr', "mask").save("fdr_c")
     ExtractByMask("slope", "mask").save("slope_c")
     ExtractByMask("fel", "mask").save("DEM_Prj_fc")      # f for fill, c for clip
-    ExtractByMask(land_use_fullpath, "mask").save("NLCD_c")
+    ExtractByMask( "LU_Prj", "mask").save("NLCD_c")
 
     #strahler for mannings for channel
     arcpy.gp.StreamOrder_sa("str_c", "fdr_c", "STRAHLER", "STRAHLER")  # the last parameter, Strahler string, is actually a method of ordering stream. NOT A NAME
     arcpy.AddMessage("SUCCESS: Strahler stream order processing complete")
 
-    arcpy.AddField_management(in_table= "NLCD_c" , field_name="ManningsN", field_type="LONG",field_precision="",
-                              field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE",
-                              field_is_required="NON_REQUIRED", field_domain="")
+    # arcpy.AddField_management(in_table= "NLCD_c" , field_name="ManningsN", field_type="LONG",field_precision="",
+    #                           field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE",
+    #                           field_is_required="NON_REQUIRED", field_domain="")
     arcpy.AddMessage("SUCCESS: Adding field to Land Use complete")
 
     # multiply Manning's n by 10,000. We will later divide it by 10,000 again
