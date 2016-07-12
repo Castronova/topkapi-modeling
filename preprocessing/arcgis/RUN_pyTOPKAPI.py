@@ -211,13 +211,16 @@ def create_rain_ET_file(simulation_folder, total_no_of_cell, ppt_file_txt ):
     rainfall_outputFile = os.path.join(simulation_folder, "rainfields.h5")
     ET_outputFile = os.path.join(simulation_folder, "ET.h5")
 
-    time_step = 59 #161
+
+    # 1_del (for removing file readings)
+    rain_from_file = numpy.genfromtxt(ppt_file_txt, delimiter='\t')
+
+    time_step = rain_from_file.shape[0]
     no_of_cell = total_no_of_cell # 3400
     # rainfall_intensity_perUnitTime = 20 #mm
     rainfall_reduction_factor = 1
 
-    # 1_del (for removing file readings)
-    rain_from_file = numpy.genfromtxt(ppt_file_txt, delimiter='\t')
+
 
     with h5py.File(rainfall_outputFile,'w') as f2:
 
@@ -264,12 +267,13 @@ def get_outletID_noOfCell(cell_para_file):
     outlet_ID = cell_param_array[cell_param_array[:,14] < -99][0][0]
     return int(outlet_ID), no_of_cell
 
-def get_cellSize(tiff_folder):
+def get_cellSize(tif_file):
     try:
         from osgeo import gdal
-        all_tiff = [item for item in os.listdir(tiff_folder) if item.endswith('.tif')]
-        tif_file=  all_tiff[0]
-        dset = gdal.Open(tif_file)
+        # all_tiff = [item for item in os.listdir(tiff_folder) if item.endswith('.tif')]
+        # tif_file=  all_tiff[0]
+        # tif_file = "mask_r.tif"
+        dset = gdal.Open(tiff_folder+"/" + tif_file)
 
         x0, dx, fy, y0, fx, dy = dset.GetGeoTransform()
     except Exception,e:
@@ -547,6 +551,11 @@ def download_daily_discharge(USGS_siteCode, beginDate, endDate,outFile, Q_max_mi
     q = f[:,-1]
     q = q * 0.028316847
 
+    # to make shape of q (x,1) instead of (x,)
+    qq = np.zeros((q.shape[0], 1))
+    qq[:, 0] = q
+
+
     # take the first 3 columns,
     # add two extra colum = 0 0 for min and sec
     # add third column = q
@@ -555,7 +564,8 @@ def download_daily_discharge(USGS_siteCode, beginDate, endDate,outFile, Q_max_mi
     empty_col = np.zeros((f.shape[0],1))
     date_n_hour = np.append(date_part,empty_col, axis =1 )
     date_hour_n_min = np.append(date_n_hour, empty_col, axis=1)
-    date_hr_min_n_Q = np.append(date_hour_n_min, q, axis=1)
+    date_hr_min_n_Q = np.append(date_hour_n_min,qq, axis=1)
+    np.savetxt(outFile,date_hr_min_n_Q, fmt='%i %i %i %i %i %f' , delimiter= "\t")
 
     return
 
@@ -768,18 +778,28 @@ def step0(ini_fname):
 
 
 if __name__ == '__main__':
+    # initialize_fname, initializing file for TIF (input files) creation, not for running the model
     initialize_fname = "./Bear_simulation.ini"
-    topkapi_simulation_folder = "../../simulations/Bear_1000/"
+
+    # a folder that contains all the initializing files, cell_param.dat file, rainfall and ET file
+    topkapi_simulation_folder = "../../simulations/Onion_simulations_calibration/"
+
+    # path to folder containing input tiff files
     tiff_folder = '../../simulations/Bear_1000/TIFFS'
+
+    # ppt file as txt, with the daily ppt value. Each of the value is assumed same for all the cells
     daily_ppt_file = "../../simulations/Onion_1/run_the_model/forcing_variables/ppt.txt"
+
+    # runoff file, for comparing while drawing the hydrographs
     runoff_file = "../../simulations/Onion_1/run_the_model/forcing_variables/Runoff.dat"
 
-    # cell_size = get_cellSize(tiff_folder)
+    # identify cell_size, from one tiff file in the tiff_folder
+    cell_size = get_cellSize(tiff_folder+'/mask_r.tif')
 
     # # Download files, and create required input raster files
     # step0(initialize_fname)
 
-    download_daily_discharge('08159000', '2013-01-01', '2013-07-31', Q_max_min_mean="mean")
+    # download_daily_discharge('08159000', '2013-01-01', '2013-07-31', runoff_file, Q_max_min_mean="mean")
 
     # create_config_files_create_file(topkapi_simulation_folder,tiff_folder,pVs_t0=90., Vo_t0=5000.)
     # create_config_files_zero_slope_mngmt(topkapi_simulation_folder, cell_size)
@@ -819,33 +839,37 @@ if __name__ == '__main__':
 
     # calib_factor_range = [x/100. for x in range(10,300,50)]
 
-    # i = 1
-    #
-    # for pvs_t0 in [50.,60.,70.,80.,90.]:
-    #     for vo_t0 in [1000.,2000.,5000.]:
-    #         for qc_t0 in [0., 2., ]:
-    #
-    #             for fac_L in  [2.5]:
-    #                 for fac_Ks in  [0.1,0.3]:
-    #                    for fac_n_o in  [0.3,0.5,1,1.5]:
-    #                         for fac_n_c in [0.3,0.5,1,1.5]:
-    #                             for fac_th_s in [1.]:
-    #                                 calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
-    #                                 numeric_param = [pvs_t0,vo_t0,qc_t0, 1 ]
-    #
-    #                                 run_name = "RUN-"+ str(i)
-    #
-    #                                 error_checking_param, Q_sim = calibrate_model(run_name,topkapi_simulation_folder, 1292, runoff_file, calib_param,numeric_param)
-    #
-    #                                 with open(topkapi_simulation_folder+'/results/calibration/run_log.txt', "a+") as run_log:
-    #                                     run_log.write('\n'+run_name + '\t'
-    #                                                   + "|".join(str(item) for item in calib_param)+  '\t'
-    #                                                   +"|".join(str(item) for item in numeric_param)+  '\t'
-    #                                                   +"|".join(str(item) for item in error_checking_param)
-    #                                                   + '\t\tQ_sim: '
-    #                                                   + " ".join(str(item) for item in Q_sim))
-    #
-    #                                 i = i +1
+    i = 1
+
+    for pvs_t0 in  [10., 20., 30., 40., 50., 60., 70., 80., 90., 95., 100.]:  #[70., 80.,90.]:
+        for vo_t0 in [1000.]: #[1000.,2000.,5000.]:
+            for qc_t0 in [0. ]:
+
+                for fac_L in   [1.]: #[0.1, 0.3,0.5,0.7,1,1.25, 1.5, 1.75, 2.]: #[0.5,1,2.5]:
+                    for fac_Ks in  [1.]: # [0.3,0.5,1,1.5]:
+                       for fac_n_o in  [1.]: #[0.3,0.5,1,1.5]:
+                            for fac_n_c in [1.]: #[0.3,0.5,1,1.5]:
+                                for fac_th_s in [1]:
+                                    calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
+                                    numeric_param = [pvs_t0,vo_t0,qc_t0, 1 ]
+
+                                    run_name = "RUN-"+ str(i)
+
+                                    # get the error parameters (nash_value, RMSE, RMSE_norm, Bias_cumul, Diff_cumul, Abs_cumul, Err_cumul)
+                                    # and the simulated discharge for each timestep
+                                    # the model run using this function takes calibration parameter and numeric parameter as input
+
+                                    error_checking_param, Q_sim = calibrate_model(run_name,topkapi_simulation_folder, 1292, runoff_file, calib_param,numeric_param)
+
+                                    with open(topkapi_simulation_folder+'/results/calibration/run_log.txt', "a+") as run_log:
+                                        run_log.write('\n'+run_name + '\t'
+                                                      + "|".join(str(item) for item in calib_param)+  '\t'
+                                                      +"|".join(str(item) for item in numeric_param)+  '\t'
+                                                      +"|".join(str(item) for item in error_checking_param)
+                                                      + '\t\tQ_sim: '
+                                                      + " ".join(str(item) for item in Q_sim))
+
+                                    i = i +1
 
 
 
