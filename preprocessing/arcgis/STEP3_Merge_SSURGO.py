@@ -114,7 +114,11 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
             # -------> MUKEY Vs Value (just one) MUKEY-Value.csv
             for valueName in valuesToAvg:       # add those values to merged
                 VxD = merged['HorizonDepth2']* merged[valueName] ; merged.loc[:,valueName+"xD_sum"]= VxD
-                chorizonCalc = merged.groupby('COKEY').agg({valueName+"xD_sum":np.sum , 'HorizonDepth2':np.sum,'ComponentPercent':np.max,'COKEY':np.max,'MUKEY':np.max })
+                chorizonCalc = merged.groupby('COKEY').agg({valueName+"xD_sum":np.sum ,
+                                                            'HorizonDepth2':np.sum,
+                                                            'ComponentPercent':np.max,
+                                                            'COKEY':np.max,
+                                                            'MUKEY':np.max })
                 chorizonCalc=chorizonCalc.rename(columns = {'HorizonDepth2':'HorizonDepth2_sum'}) # because grouping by cokey, the column name doesnt match its data
 
                 VxD_by_sum = chorizonCalc[valueName+"xD_sum"].astype('float').div(chorizonCalc['HorizonDepth2_sum'].astype('float'))
@@ -181,7 +185,8 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
             # delete all the csv files made so far, except the MUKEY-Vs-Values.csv
             filelist = [ f for f in os.listdir(path2tabular) if f.endswith(".csv") ]
             for f in filelist:
-                os.remove(os.path.join(path2tabular, f))
+                # os.remove(os.path.join(path2tabular, f))
+                pass
 
         except Exception,e :
             print "Merging the Hydrologic Soil Group failed with the error %s"%e

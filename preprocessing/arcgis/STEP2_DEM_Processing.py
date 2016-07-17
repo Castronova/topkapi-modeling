@@ -69,6 +69,7 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
 
     # make feature layer
     outlet_point_sf = os.path.basename(outlet_fullpath)
+    print os.getcwd()
     arcpy.MakeFeatureLayer_management(outlet_fullpath,outlet_point_sf)
 
         # newly added
@@ -99,7 +100,7 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
 
 
         # arcpy.ProjectRaster_management(in_raster=land_use_fullpath, out_raster="Landuse_temp", out_coor_system=outCS)
-        arcpy.Resample_management(in_raster= DEM_fullpath,
+        arcpy.Resample_management(in_raster= land_use_fullpath,
                                   out_raster= "LU_Prj",
                                   cell_size=str(cell_size)+" "+str(cell_size), resampling_type="NEAREST")
 
@@ -154,7 +155,13 @@ def step2_dem_processing(DEM_fullpath, land_use_fullpath, outDir, outlet_fullpat
     ExtractByMask('fdr', "mask").save("fdr_c")
     ExtractByMask("slope", "mask").save("slope_c")
     ExtractByMask("fel", "mask").save("DEM_Prj_fc")      # f for fill, c for clip
-    ExtractByMask( "LU_Prj", "mask").save("NLCD_c")
+
+    # for some reason there is problem once in a while in this step
+    # ExtractByMask( 'LU_lyr', "mask").save("NLCD_c")
+    arcpy.gp.ExtractByMask_sa(
+        outDir+"/LU_Prj",
+        outDir+"/mask",
+        outDir+"/NLCD_c")
 
     #strahler for mannings for channel
     arcpy.gp.StreamOrder_sa("str_c", "fdr_c", "STRAHLER", "STRAHLER")  # the last parameter, Strahler string, is actually a method of ordering stream. NOT A NAME

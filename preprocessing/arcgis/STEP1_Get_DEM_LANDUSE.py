@@ -56,7 +56,7 @@ def step1_get_dem_landuse(inUsername,inPassword,outGDB,wshedBoundary,bufferDi, o
     arcpy.MakeFeatureLayer_management("Boundary", "Boundary")
 
     # Buffer
-    arcpy.Buffer_analysis("Boundary", "Buffer", "500 Feet", "FULL", "ROUND", "NONE", "", "PLANAR")
+    arcpy.Buffer_analysis("Boundary", "Buffer", "%s Meters"%bufferDi, "FULL", "ROUND", "NONE", "", "PLANAR")
 
     # Connect to ArcGIS Servers
     out_folder_path = 'GIS Servers'
