@@ -1,11 +1,11 @@
 import os
-import ConfigParser
-from ConfigParser import SafeConfigParser
-import shutil
 import numpy as np
 import sys, datetime
 sys.path.append('../../PyTOPKAPI')
 import pytopkapi
+import ConfigParser
+from ConfigParser import SafeConfigParser
+import shutil
 
 def create_config_files_create_file(simulation_folder, tiff_folder,pVs_t0=90., Vo_t0=1000., Qc_t0=0, Kc=1 ):
     if not os.path.exists(simulation_folder):
@@ -25,7 +25,7 @@ def create_config_files_create_file(simulation_folder, tiff_folder,pVs_t0=90., V
     configWrite.set('raster_files', 'overland_manning_fname', tiff_folder+ '/n_Overland.tif' )
     configWrite.set('raster_files', 'channel_network_fname', tiff_folder+ '/str_cr255.tif')
     configWrite.set('raster_files', 'flowdir_fname', tiff_folder+ '/fdr_cr.tif' )
-    configWrite.set('raster_files', 'channelMannings_fname', tiff_folder+ '/n_Channel.tif' )
+    configWrite.set('raster_files', 'channel_manning_fname', tiff_folder+ '/n_Channel.tif' )
     configWrite.set('raster_files', 'flowdir_source',  'ArcGIS' )
 
 
@@ -195,9 +195,9 @@ def create_cell_param( create_file_ini_file, zero_slope_mngmt_ini_file):
 
     return
 
-def create_global_param(simulation_folder, A_thres=25000000, X=30.92208078, Dt=86400, W_min=1., W_Max=10.):
+def create_global_param(simulation_folder, A_thres=25, X=30.92208078, Dt=86400, W_min=1., W_Max=10.):
     title = ['X', 'Dt', 'Alpha_s', 'Alpha_o', 'Alpha_c', 'A_thres', 'W_min', 'W_max']
-    values = [X, Dt, 2.5,1.6666667, 1.6666667, A_thres, W_min , W_Max]
+    values = [X, Dt, 2.5,1.6666667, 1.6666667, A_thres*1000000., W_min , W_Max]
     values = [str(item) for item in values]
     with open(simulation_folder+"/global_param.dat", "wb") as g_param_file:
         string = "\t\t".join(title)+ '\n' + "\t\t".join(values)
@@ -219,8 +219,6 @@ def create_rain_ET_file(simulation_folder, total_no_of_cell, ppt_file_txt ):
     no_of_cell = total_no_of_cell # 3400
     # rainfall_intensity_perUnitTime = 20 #mm
     rainfall_reduction_factor = 1
-
-
 
     with h5py.File(rainfall_outputFile,'w') as f2:
 
@@ -309,7 +307,7 @@ def check_hdf5(hdf5_filename):
             except:
                 pass
 
-def plot_sim_observed(simulation_folder, image_out, file_Qobs, outlet_ID):
+def plot_sim_observed(simulation_folder,  file_Qobs, outlet_ID):
     '''
     Parameters
     ----------
@@ -327,6 +325,7 @@ def plot_sim_observed(simulation_folder, image_out, file_Qobs, outlet_ID):
     from pytopkapi.results_analysis import plot_Qsim_Qobs_Rain as pt
     import matplotlib.pyplot as plt
     from matplotlib.dates import date2num
+    from datetime import datetime
 
     file_Qsim= simulation_folder + "/results/results.h5"
     group_name= 'sample_event'
@@ -340,6 +339,7 @@ def plot_sim_observed(simulation_folder, image_out, file_Qobs, outlet_ID):
     color_P='b'
     transparency_P=0.5#(0 for invisible)
 
+    image_out = simulation_folder+'/results/calibration/Result_'+ str(datetime.now()).replace(':','-')[:-7] + '.png'
     #create path_out if it does'nt exist
     ut.check_file_exist(image_out)
 
@@ -439,33 +439,36 @@ def plot_sim_observed(simulation_folder, image_out, file_Qobs, outlet_ID):
     return error_checking_param, ar_Qsim
 
 def download_daily_discharge(USGS_siteCode, beginDate, endDate,outFile, Q_max_min_mean= "mean"):
-    """
-    HW7  in hydroinformatics
-    startDate, endDate: string,  format-  yyyy-mm-dd
-    Q_max_min_mean: string, "max", "mean" or "min"
-    """
-
-    # GetValuesObject from a WaterOneFlow web service
+    # Example of calling GetValuesObject from a WaterOneFlow web service
     # Then create a time series plot using matplotlib
     from suds.client import Client
     from pandas import Series
-    # import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
     # Create the inputs needed for the web service call
     wsdlURL = 'http://hydroportal.cuahsi.org/nwisuv/cuahsi_1_1.asmx?WSDL'
-    siteCode = 'NWISUV:%s'%USGS_siteCode
+    NWIS = Client(wsdlURL).service
+
     variableCode = 'NWISUV:00060'
 
+    siteCode = 'NWISUV:' + USGS_siteCode
+    beginDate = beginDate #'2015-08-01'
+    endDate = endDate #'2015-11-06'
+
     # Create a new object named "NWIS" for calling the web service methods
-    NWIS = Client(wsdlURL).service
+
 
     # Call the GetValuesObject method to return datavalues
     response = NWIS.GetValuesObject(siteCode, variableCode, beginDate, endDate)
 
     # Get the site's name from the response
-    siteName = response.timeSeries[0].sourceInfo.siteName
+    try:
+        siteName = response.timeSeries[0].sourceInfo.siteName
+    except Exception, e:
+        print 'ERROR: SiteCode: %s does not have the data'%USGS_siteCode
+        return
 
-    # Create some blank lists in which to put the values and their dates
+        # Create some blank lists in which to put the values and their dates
     a = []  # The values
     b = []  # The dates
 
@@ -481,60 +484,56 @@ def download_daily_discharge(USGS_siteCode, beginDate, endDate,outFile, Q_max_mi
     # Set the index of the Series object to the dates
     ts = Series(a, index=b)
 
-    # # resample is like group by clause in SQL
-    # # summed = ts.resample('1D', how='sum')                            #ts.resample('1440T', how='sum')
-    # ts_maxx = ts.resample('1D', how='max')
-    # ts_minn = ts.resample('1D', how='min')
-    # ts_mean = ts.resample('1D', how='mean')
+    # resample is like group by clause in SQL
+    # summed = ts.resample('1D', how='sum')                            #ts.resample('1440T', how='sum')
+    ts_maxx = ts.resample('1D').max
+    ts_minn = ts.resample('1D').min
+    ts_mean = ts.resample('1D').mean
 
-    # # Use MatPlotLib to create a plot of the time series
-    # # Create a plot of the streamflow statistics
-    # # ------------------------------------------
-    # # Create a figure object and add a subplot
-    # # figure() creates  a big area where we can create multiple or single drawings
-    # fig = plt.figure()
-    # ax = fig.add_subplot(1, 1, 1)  # arguments for add_subplot - add_subplot(nrows, ncols, plot_number)
+    # try:
+    #     # Use MatPlotLib to create a plot of the time series
+    #     # Create a plot of the streamflow statistics
+    #     # ------------------------------------------
+    #     # Create a figure object and add a subplot
+    #     # figure() creates  a big area where we can create multiple or single drawings
+    #     fig = plt.figure()
+    #     ax = fig.add_subplot(1, 1, 1)  # arguments for add_subplot - add_subplot(nrows, ncols, plot_number)
     #
-    # # Call the plot() methods on the series object to plot the data
-    # ts.plot(color='0.9', linestyle='solid', label='15-minute streamflow values')
-    # ts_maxx.plot(color='red', linestyle='solid', label='Daily streamflow values', marker="o")
-    # ts_mean.plot(color='green', linestyle='solid', label='Daily streamflow values', marker="o")
-    # ts_minn.plot(color='blue', linestyle='solid', label='Daily streamflow values', marker="o")
+    #     # Call the plot() methods on the series object to plot the data
+    #     ts.plot(color='0.9', linestyle='solid', label='15-minute streamflow values')
+    #     ts_maxx.plot(color='red', linestyle='solid', label='Daily streamflow values', marker="o")
+    #     ts_mean.plot(color='green', linestyle='solid', label='Daily streamflow values', marker="o")
+    #     ts_minn.plot(color='blue', linestyle='solid', label='Daily streamflow values', marker="o")
     #
-    # # Set some properties of the subplot to make it look nice
-    # ax.set_ylabel('Discharge, cubic feet per second')
-    # ax.set_xlabel('Date')
-    # ax.grid(True)
-    # ax.set_title(siteName)
+    #     # Set some properties of the subplot to make it look nice
+    #     ax.set_ylabel('Discharge, cubic feet per second')
+    #     ax.set_xlabel('Date')
+    #     ax.grid(True)
+    #     ax.set_title(siteName)
     #
-    # # Add a legend with some customizations
-    # legend = ax.legend(loc='upper left', shadow=True)
+    #     # Add a legend with some customizations
+    #     legend = ax.legend(loc='upper left', shadow=True)
     #
-    # # Create a frame around the legend.
-    # frame = legend.get_frame()
-    # frame.set_facecolor('0.95')
+    #     # Create a frame around the legend.
+    #     frame = legend.get_frame()
+    #     frame.set_facecolor('0.95')
+    #
+    #     # Set the font size in the legend
+    #     for label in legend.get_texts():
+    #         label.set_fontsize('large')
+    #
+    #     for label in legend.get_lines():
+    #         label.set_linewidth(1.5)  # the legend line width
+    #
+    #
+    #     # # plt.show()
+    #
+    #     plt.savefig('../../data/discharge/' + USGS_siteCode + ".png")
+    # except Exception, e:
+    #     print "FAILURE: Matplotlib graph preparation"
 
-    # # Set the font size in the legend
-    # for label in legend.get_texts():
-    #     label.set_fontsize('large')
-    #
-    # for label in legend.get_lines():
-    #     label.set_linewidth(1.5)  # the legend line width
-    #
-    # plt.savefig("HW7.png")
-    # plt.show()
-
-    if Q_max_min_mean.lower() == "max":
-        ts_maxx = ts.resample('1D').max()
-        r = ts_maxx
-    elif Q_max_min_mean.lower() == "min":
-        ts_minn = ts.resample('1D').min
-        r = ts_minn
-    else:
-        # old syntax was  ts_mean = ts.resample('1D' , how='mean')
-        ts_mean = ts.resample('1D').mean()
-        r = ts_mean
-
+    r = ts_mean
+    print r
     r.to_csv(outFile)
 
     # change format of the date in the saved file
@@ -608,19 +607,18 @@ def calibrate_model(run_name, simulation_folder,  outlet_ID, runoff_file, calibr
 
 
     # run the program now
-    pytopkapi.run(topkapi_simulation_folder+'/TOPKAPI.ini')
+    pytopkapi.run(simulation_folder+'/TOPKAPI.ini')
 
-    error_checking_param ,ar_Q_sim = plot_sim_observed(topkapi_simulation_folder, topkapi_simulation_folder+"/results/calibration/"+run_name, runoff_file, outlet_ID)
+    error_checking_param ,ar_Q_sim = plot_sim_observed(simulation_folder, runoff_file, outlet_ID)
 
     return error_checking_param, ar_Q_sim
 
 
-def step0(ini_fname):
+def preprocess_input_tiffs(ini_fname=''):
     import arcpy
     from STEP1_Get_DEM_LANDUSE import step1_get_dem_landuse
     from STEP2_DEM_Processing import step2_dem_processing
     from STEP4_Join_Merge_Export import STEP4_Join_Merge_Export
-
 
     arcpy.env.overwriteOutput = True
     arcpy.CheckOutExtension("Spatial")
@@ -639,45 +637,45 @@ def step0(ini_fname):
     outCS = arcpy.GetParameterAsText(10)
 
     # INPUTS, if script ran as standalone
-    if projDir == "":
+    if ini_fname != "":
 
         # initializing
         config = SafeConfigParser()
         config.read(ini_fname)
 
-        # path to directories
-        path2ssurgoFolders = config.get('directory', 'ssurgo_collection')
-        path2statsgoFolders = config.get('directory', 'statsgo_collection')
-        projDir = config.get('directory', 'projDir')
+        # read from initializing file
+        # Flags or Binary
+        download_data = config.getboolean('preprocessing_flags', 'download_data')
+        process_dem = config.getboolean('preprocessing_flags', 'process_dem')
+        extract_ssurgo_data = config.getboolean('preprocessing_flags', 'extract_ssurgo_data')
+        merge_ssurgo_to_raster = config.getboolean('preprocessing_flags', 'merge_ssurgo_to_raster')
 
-        # path to shapefiles
-        outlet_fullpath = config.get('input_files', 'outlet_fullpath')
-        wshedBoundary = config.get('input_files', 'wshedBoundary')
+        del_downloaded_files = config.getboolean('preprocessing_flags', 'del_downloaded_files')
+        del_ssurgo_files = config.getboolean('preprocessing_flags', 'del_ssurgo_files')
+        del_demProcessed_files = config.getboolean('preprocessing_flags', 'del_demProcessed_files')
 
-        # path to other variables
-        areaThreshold = config.get('other_parameter', 'areaThreshold')
-        inUsername = config.get('other_parameter', 'inUsername')
-        inPassword = config.get('other_parameter', 'inPassword')
-        bufferDi = config.get('other_parameter', 'bufferDi')
-        cell_size = config.get('other_parameter', 'cell_size')
-        outCS = config.get('other_parameter', 'outCS')
+        # Path to the Input shape files
+        outlet_fullpath = config.get('preprocessing_input_files', 'outlet_fullpath')
+        wshedBoundary = config.get('preprocessing_input_files', 'wshedBoundary')
 
-        # output
-        tiff_folder = config.get('output', 'tiff_folder')
+        # Input Variables
+        inUsername = config.get('preprocessing_input_variables', 'inUsername')
+        inPassword = config.get('preprocessing_input_variables', 'inPassword')
+        areaThreshold = config.get('preprocessing_input_variables', 'areaThreshold')
+        bufferDi = config.get('preprocessing_input_variables', 'bufferDi')
+        cell_size = config.get('preprocessing_input_variables', 'cell_size')
+        outCS = config.get('preprocessing_input_variables', 'outCS')
 
-        # flags, which help decide whether or no
-        download_data = config.get('flags', 'download_data')
-        process_dem = config.get('flags', 'process_dem')
-        extract_ssurgo_data = config.get('flags', 'extract_ssurgo_data')
-        merge_ssurgo_to_raster = config.get('flags', 'merge_ssurgo_to_raster')
+        # workspaces
+        projDir = config.get('preprocessing_workspaces', 'projDir')
+        path2ssurgoFolders = config.get('preprocessing_workspaces', 'ssurgo_collection')
+        path2statsgoFolders = config.get('preprocessing_workspaces', 'statsgo_collection')
 
-        del_downloaded_files = config.get('flags', 'del_downloaded_files')
-        del_ssurgo_files = config.get('flags', 'del_ssurgo_files')
-        del_demProcessed_files = config.get('flags', 'del_demProcessed_files')
+        tiff_folder = config.get('preprocessing_workspaces', 'out_tiff_folder')
 
 
     # list of empty directories to be made
-    folders_to_create = ['DEM_processed_rasters', 'SSURGO_rasters', 'TIFFS']
+    folders_to_create = [ 'SSURGO_rasters', 'TIFFS']
 
     # Out Directories
     raw_files_outDir = os.path.join(projDir, "Raw_files.gdb")
@@ -703,22 +701,22 @@ def step0(ini_fname):
 
     arcpy.env.workspace = arcpy.env.scratchWorkspace = projDir
 
-    if download_data.lower() == 'true':
+    if download_data:
         # Step1, download the data
         step1_get_dem_landuse(inUsername,inPassword,downloads_outDir ,wshedBoundary,bufferDi, outCS)
 
-    if process_dem.lower() == 'true':
+    if process_dem:
         # Step2
         DEM_fullpath = os.path.join(downloads_outDir, "DEM_Prj")
         land_use_fullpath = os.path.join(downloads_outDir, "Land_Use_Prj")
 
-        if download_data.lower() == 'false':
+        if not download_data:
             DEM_fullpath = downloads_outDir+"/DEM"
             land_use_fullpath = os.path.join(downloads_outDir, "Land_Use")
 
         step2_dem_processing(DEM_fullpath, land_use_fullpath ,raw_files_outDir , outlet_fullpath, areaThreshold,cell_size, outCS)
 
-    if extract_ssurgo_data.lower() == 'true':
+    if extract_ssurgo_data:
         # Step3
         try:
             from STEP3_Merge_SSURGO import step3_merge_ssurgo
@@ -728,7 +726,7 @@ def step0(ini_fname):
         except Exception,e:
             arcpy.AddMessage(e)
 
-    if merge_ssurgo_to_raster.lower() == 'true':
+    if merge_ssurgo_to_raster:
         # Step4
         MatchRaster = os.path.join(raw_files_outDir, "mask_r")
         STEP4_Join_Merge_Export (path2ssurgoFolders, path2statsgoFolders, ssurgo_outDir, MatchRaster )
@@ -745,9 +743,12 @@ def step0(ini_fname):
     for file in os.listdir(tiffs_outDir):
         if not file.split(".")[-1] in ['tif', "gdb", "xlsx"] :
             os.remove(os.path.join(tiffs_outDir,file))
-    for file in os.listdir(ssurgo_outDir):
-        if file.split(".")[-1] in ['tif' , 'TEMP']:
-            os.remove(os.path.join(ssurgo_outDir,file))
+    try:
+        for file in os.listdir(ssurgo_outDir):
+            if file.split(".")[-1] in ['tif' , 'TEMP']:
+                os.remove(os.path.join(ssurgo_outDir,file))
+    except Exception,e:
+        print "FAILED: Temporary files deletion"
 
     # copy files
     try:
@@ -756,7 +757,7 @@ def step0(ini_fname):
         if not os.path.exists(tiff_folder):
             os.mkdir(tiff_folder)
         for file in os.listdir(tiffs_outDir):
-            shutil.copyfile(os.path.join(tiffs_outDir,file), tiff_folder)
+            shutil.copyfile(os.path.join(tiffs_outDir,file), os.path.join(tiff_folder,file) )
 
         # del downloaded files
         if del_downloaded_files.lower()== 'true':
@@ -776,103 +777,186 @@ def step0(ini_fname):
         arcpy.AddMessage( "FAILURE: Deleting temporary files. Error: %s"%e)
     return "SUCCESS: Input Raster files creation"
 
+def run_pyTOPKAPI(ini_fname):
+    import ConfigParser
+    from ConfigParser import SafeConfigParser
+
+    # initializing
+    config = SafeConfigParser()
+    config.read(ini_fname)
+    print 'Reading initializing file: ', ini_fname
+    # # Pre-processing # #
+    preprocessing_input = config.getboolean('preprocessing', 'preprocessing_input')
+
+    # # Create Parameter file (cell_param.dat) # #
+    create_param_files = config.getboolean('create_param_files', 'create_param_files')
+    if create_param_files:
+        simulation_folder = config.get('create_param_files', 'simulation_folder')
+        in_tiff_folder = config.get('create_param_files', 'in_tiff_folder')
+
+        areaThreshold = config.getfloat('create_param_files', 'areaThreshold')
+        cell_size = config.getfloat('create_param_files', 'cell_size')
+
+        pVs_t0 = config.getfloat('create_param_files_parameters', 'pVs_t0')
+        Vo_t0 = config.getfloat('create_param_files_parameters', 'Vo_t0')
+
+    # # Simulation # #
+    run_simulation = config.getboolean('simulation', 'run_simulation')
+
+    if run_simulation:
+        simulation_folder = config.get('simulation_forcing_files', 'simulation_folder')
+
+        create_forcing_files = config.get('simulation_forcing_files', 'create_forcing_files')
+        if create_forcing_files:
+            # path to the forcing files
+            precipitation_file = config.get('simulation_forcing_files', 'precipitation_file')
+            ET_file = config.get('simulation_forcing_files', 'ET_file')
+
+        # Simulations Results
+        draw_hydrograph = config.getboolean('simulation_results', 'draw_hydrograph')
+        draw_maps = config.getboolean('simulation_results', 'draw_maps')
+        Q_observed_file = config.get('simulation_results', 'Q_observed_file')
+        variable_id_for_maps = config.getfloat('simulation_results', 'variable_id_for_maps')
+
+    # Calibration #
+    # Do Calibration or not
+    calibrate_the_model = config.getboolean('calibration', 'calibrate_the_model')
+
+    if calibrate_the_model:
+        # only executes if run_simulation is to be done
+        pass
+
+
+    ## MAIN PROGRAM ##
+    if preprocessing_input:
+        preprocess_input_tiffs(ini_fname)
+
+    if create_param_files:
+        if in_tiff_folder == '':
+            in_tiff_folder = simulation_folder+'/TIFFS'
+
+        # get cell size, input a tiff, if not given as input
+        if cell_size == '':
+            cell_size = get_cellSize(in_tiff_folder + '/mask_r.tif')
+
+        # create ini : create_file.ini
+        create_config_files_create_file(simulation_folder,in_tiff_folder,pVs_t0=pVs_t0, Vo_t0=Vo_t0)
+
+        # create ini : zero_slope_management.ini
+        create_config_files_zero_slope_mngmt(simulation_folder, cell_size)
+
+        # create global parameter files
+        # todo: automate Dt, and try W_min and W_max
+        create_global_param(simulation_folder, A_thres=areaThreshold, X=cell_size, Dt=86400, W_min=5., W_Max=30.)
+
+        # create the parameter file
+        # using the built in create_file script
+        # Also executes the zero slope corrections
+        create_cell_param(simulation_folder+'/create_file.ini', simulation_folder+'/zero_slope_management.ini')
+
+    if run_simulation:
+        # create forcing files
+
+        outlet_ID, no_of_cell = get_outletID_noOfCell(simulation_folder+'/cell_param.dat')
+        if create_forcing_files:
+
+            # create hdf5 rainfall and ET files
+            # get total number of cells, and the
+            # todo: ET is right now all zero. Change this.
+            create_rain_ET_file(simulation_folder, no_of_cell, ppt_file_txt=precipitation_file)
+
+
+            create_config_files_TOPKAPI_ini(simulation_folder, append_output_binary='False', fac_L=1.,
+                                            fac_Ks=1., fac_n_o=1., fac_n_c=1., fac_th_s=1)
+
+            # create ini: plot-flow-precip.ini
+            create_config_files_plot_flow_precip(simulation_folder,Q_observed_file,outlet_ID)
+
+            # create ini: plot-soil-moisture-map.ini
+            create_config_files_plot_soil_moisture_map(simulation_folder)
+
+        # RUN THE MODEL
+        pytopkapi.run(simulation_folder + '/TOPKAPI.ini')
+
+        if draw_hydrograph:
+            plot_sim_observed(simulation_folder,Q_observed_file,outlet_ID)
+        if draw_maps:
+            from pytopkapi.results_analysis import plot_soil_moisture_maps
+            plot_soil_moisture_maps.run(simulation_folder+'/plot-soil-moisture-maps.ini')
+
+    if calibrate_the_model:
+        simulation_folder = config.get('simulation_forcing_files', 'simulation_folder')
+        Q_observed_file = config.get('simulation_results', 'Q_observed_file')
+
+        if not os.path.exists(simulation_folder+'/results'):
+            os.mkdir(simulation_folder+'/results')
+
+        if not os.path.exists(simulation_folder + '/results/calibration'):
+            os.mkdir(simulation_folder + '/results/calibration')
+
+        # create a blank file
+        open(simulation_folder + "/results/calibration/run_log.txt", 'a').close()
+
+        # get the outlet_ID
+        config = SafeConfigParser()
+        config.read(simulation_folder+'/plot-flow-precip.ini')
+
+        # outlet_ID
+        outlet_id = config.getint('parameters', 'outlet_id')
+
+        calib_factor_range = [x/100. for x in range(10,300,50)]
+
+        i = 1
+
+        for pvs_t0 in  [ 30.,50., 70., 90., 95.]:  #[70., 80.,90.]:
+            for vo_t0 in [100., 500.,1000.,2000.]:
+                for qc_t0 in [0. ]:
+
+                    for fac_L in  [0.1, 0.5,1, 1.5, 1.75, 2.]: #[0.5,1,2.5]:
+                        for fac_Ks in [0.1,0.5,1,1.5,2.]:
+                           for fac_n_o in  [1.]: #[0.3,0.5,1,1.5]:
+                                for fac_n_c in [1.]: #[0.3,0.5,1,1.5]:
+                                    for fac_th_s in [1]:
+                                        calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
+                                        numeric_param = [pvs_t0,vo_t0,qc_t0, 1 ]
+
+                                        run_name = "RUN-"+ str(i)
+
+                                        # get the error parameters (nash_value, RMSE, RMSE_norm, Bias_cumul, Diff_cumul, Abs_cumul, Err_cumul)
+                                        # and the simulated discharge for each timestep
+                                        # the model run using this function takes calibration parameter and numeric parameter as input
+
+                                        error_checking_param, Q_sim = calibrate_model(run_name,simulation_folder, outlet_id, Q_observed_file, calib_param,numeric_param)
+
+                                        with open(simulation_folder+'/results/calibration/run_log.txt', "a+") as run_log:
+                                            run_log.write('\n'+run_name + '\t'
+                                                          + "|".join(str(item) for item in calib_param)+  '\t'
+                                                          +"|".join(str(item) for item in numeric_param)+  '\t'
+                                                          +"|".join(str(item) for item in error_checking_param)
+                                                          + '\tQ_sim: '
+                                                          + " ".join(str(item) for item in Q_sim))
+
+                                        i = i +1
+
+
 
 if __name__ == '__main__':
     # initialize_fname, initializing file for TIF (input files) creation, not for running the model
-    initialize_fname = "./Bear_simulation.ini"
+    collection_of_wshed = [ 'EastCanyonCreek', 'EastForkLittleBear',
+                            'HobbleCreek', 'LostCreek' , 'SouthForkOgdenRiver','StrawberryRiver'  ]
+    # for wshed_to_simulate in collection_of_wshed:
+    #     run_pyTOPKAPI('../../../Multiple Watersheds in BRB/%s/%s.ini' % (wshed_to_simulate, wshed_to_simulate))
+    #     # try:
+    #     #     print ('../../../Multiple Watersheds in BRB/%s/%s.ini' % (wshed_to_simulate, wshed_to_simulate))
+    #     # except Exception, e:
+    #     #     print 'Unsuccessful for ', wshed_to_simulate
 
-    # a folder that contains all the initializing files, cell_param.dat file, rainfall and ET file
-    topkapi_simulation_folder = "../../simulations/Onion_simulations_calibration/"
+    # download_daily_discharge('10105900', '2015-01-01', '2015-12-30', '../../../Multiple Watersheds in BRB/LittleBearRiver/Runoff_2015.dat', Q_max_min_mean="mean")
 
-    # path to folder containing input tiff files
-    tiff_folder = '../../simulations/Bear_1000/TIFFS'
+    # create_rain_ET_file(r'C:\Users\Prasanna\OneDrive\Public\Multiple Watersheds in BRB\LoganRiver',6169,
+    #                     r'C:\Users\Prasanna\OneDrive\Public\Multiple Watersheds in BRB\LoganRiver\Rainfall.txt')
 
-    # ppt file as txt, with the daily ppt value. Each of the value is assumed same for all the cells
-    daily_ppt_file = "../../simulations/Onion_1/run_the_model/forcing_variables/ppt.txt"
-
-    # runoff file, for comparing while drawing the hydrographs
-    runoff_file = "../../simulations/Onion_1/run_the_model/forcing_variables/Runoff.dat"
-
-    # identify cell_size, from one tiff file in the tiff_folder
-    cell_size = get_cellSize(tiff_folder+'/mask_r.tif')
-
-    # # Download files, and create required input raster files
-    # step0(initialize_fname)
-
-    # download_daily_discharge('08159000', '2013-01-01', '2013-07-31', runoff_file, Q_max_min_mean="mean")
-
-    # create_config_files_create_file(topkapi_simulation_folder,tiff_folder,pVs_t0=90., Vo_t0=5000.)
-    # create_config_files_zero_slope_mngmt(topkapi_simulation_folder, cell_size)
-    #
-    # create_cell_param( topkapi_simulation_folder+'/create_file.ini', topkapi_simulation_folder+'/zero_slope_management.ini')
-    #
-    # outletID, no_of_cell = get_outletID_noOfCell(os.path.join(topkapi_simulation_folder,"cell_param.dat"))
-    #
-    #
-    # create_config_files_plot_flow_precip(topkapi_simulation_folder,runoff_file, outletID ,calibration_start_data='01/01/2015' )
-    # create_config_files_plot_soil_moisture_map(topkapi_simulation_folder,t1=1, t2=2, variable=4, fac_L=1., fac_Ks=1., fac_n_o=1., fac_n_c=1. )
-    #
-    # # create_cell_param( topkapi_simulation_folder+"/create_file.ini", topkapi_simulation_folder+'/zero_slope_management.ini')
-    # create_global_param(topkapi_simulation_folder, A_thres=25000000, X=cell_size, Dt=86400, W_min=5., W_Max=30.) # better to have in inside step0
-    # create_rain_ET_file(topkapi_simulation_folder, total_no_of_cell=no_of_cell,ppt_file_txt= daily_ppt_file )
-    #
-    # create_config_files_TOPKAPI_ini(topkapi_simulation_folder, append_output_binary = 'False',fac_L = 1.4, fac_Ks = 1. ,fac_n_o  = 1. ,fac_n_c  = 1., fac_th_s = 1 )
-    #
-    # # run the program now
-    # pytopkapi.run(topkapi_simulation_folder+'/TOPKAPI.ini')
-    #
-    # # plot
-    # from pytopkapi.results_analysis import plot_Qsim_Qobs_Rain, plot_soil_moisture_maps
-    #
-    # # Plot the hydrograph
-    # plot_Qsim_Qobs_Rain.run(topkapi_simulation_folder+'/plot-flow-precip.ini')
-    #
-    # # # Plot soil moisture
-    # plot_soil_moisture_maps.run(topkapi_simulation_folder+'/plot-soil-moisture-maps.ini')
-
-
-    # calibrate_model("Run-0", [1,1,1,1,1],topkapi_simulation_folder, 1292, runoff_file)
-
-    # open(topkapi_simulation_folder+"/results/calibration/run_log.txt", 'a').close()
-
-
-
-    # calib_factor_range = [x/100. for x in range(10,300,50)]
-
-    i = 1
-
-    for pvs_t0 in  [10., 20., 30., 40., 50., 60., 70., 80., 90., 95., 100.]:  #[70., 80.,90.]:
-        for vo_t0 in [1000.]: #[1000.,2000.,5000.]:
-            for qc_t0 in [0. ]:
-
-                for fac_L in   [1.]: #[0.1, 0.3,0.5,0.7,1,1.25, 1.5, 1.75, 2.]: #[0.5,1,2.5]:
-                    for fac_Ks in  [1.]: # [0.3,0.5,1,1.5]:
-                       for fac_n_o in  [1.]: #[0.3,0.5,1,1.5]:
-                            for fac_n_c in [1.]: #[0.3,0.5,1,1.5]:
-                                for fac_th_s in [1]:
-                                    calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
-                                    numeric_param = [pvs_t0,vo_t0,qc_t0, 1 ]
-
-                                    run_name = "RUN-"+ str(i)
-
-                                    # get the error parameters (nash_value, RMSE, RMSE_norm, Bias_cumul, Diff_cumul, Abs_cumul, Err_cumul)
-                                    # and the simulated discharge for each timestep
-                                    # the model run using this function takes calibration parameter and numeric parameter as input
-
-                                    error_checking_param, Q_sim = calibrate_model(run_name,topkapi_simulation_folder, 1292, runoff_file, calib_param,numeric_param)
-
-                                    with open(topkapi_simulation_folder+'/results/calibration/run_log.txt', "a+") as run_log:
-                                        run_log.write('\n'+run_name + '\t'
-                                                      + "|".join(str(item) for item in calib_param)+  '\t'
-                                                      +"|".join(str(item) for item in numeric_param)+  '\t'
-                                                      +"|".join(str(item) for item in error_checking_param)
-                                                      + '\t\tQ_sim: '
-                                                      + " ".join(str(item) for item in Q_sim))
-
-                                    i = i +1
-
-
-
+    run_pyTOPKAPI('../../../Multiple Watersheds in BRB/LoganRiver/LoganRiver.ini' )
 
 
 
