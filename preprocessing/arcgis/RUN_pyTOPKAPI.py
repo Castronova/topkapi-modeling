@@ -349,16 +349,16 @@ def plot_sim_observed(simulation_folder,  file_Qobs, outlet_ID):
 
     delta = date2num(ar_date[1]) - date2num(ar_date[0])
 
-    #Rain
-    if Pobs:
-        h5file = h5py.File(file_rain)
-
-        dset_string = '/%s/rainfall' % group_name
-        ndar_rain = h5file[dset_string][...]
-
-        h5file.close()
-        #Compute the mean catchment rainfall
-        ar_rain=np.average(ndar_rain,axis=1)
+    # #Rain
+    # if Pobs:
+    #     h5file = h5py.File(file_rain)
+    #
+    #     dset_string = '/%s/rainfall' % group_name
+    #     ndar_rain = h5file[dset_string][...]
+    #
+    #     h5file.close()
+    #     #Compute the mean catchment rainfall
+    #     ar_rain=np.average(ndar_rain,axis=1)
 
     #Read the simulated data Q
     file_h5=file_Qsim
@@ -375,7 +375,7 @@ def plot_sim_observed(simulation_folder,  file_Qobs, outlet_ID):
                          color=tab_col[-1],
                          linestyle=tab_style[-1], linewidth=tab_width[-1])
         tab_leg.append(('Observation'))
-        tab_leg = tab_leg[::-1]
+        tab_leg = tab_leg[::-1] # extended slicing. This Reverses the order
 
     lines += ax.plot(ar_date, ar_Qsim,
                      color=tab_col[0],
@@ -386,6 +386,15 @@ def plot_sim_observed(simulation_folder,  file_Qobs, outlet_ID):
         nash_value = ut.Nash(ar_Qsim,ar_Qobs)
         lines += ax.plot(ar_date[0:1], ar_Qsim[0:1], 'w:')
         tab_leg.append(('Eff = '+str(nash_value)[0:5]))
+
+        RMSE = ut.RMSE(ar_Qsim, ar_Qobs) ;lines += ax.plot(ar_date[0:1], ar_Qsim[0:1], 'w:') ; tab_leg.append(('RMSE = '+str(RMSE)[0:5]))
+        RMSE_norm = ut.RMSE_norm(ar_Qsim, ar_Qobs)   ;lines += ax.plot(ar_date[0:1], ar_Qsim[0:1], 'w:') ;  tab_leg.append(('RMSE_norm = '+str(RMSE_norm)[0:5]))
+        Bias_cumul = ut.Bias_cumul(ar_Qsim, ar_Qobs) ; lines += ax.plot(ar_date[0:1], ar_Qsim[0:1], 'w:') ; tab_leg.append(('Bias_cumul = '+str(Bias_cumul)[0:5]))
+        Diff_cumul = ut.Diff_cumul(ar_Qsim, ar_Qobs) ; lines += ax.plot(ar_date[0:1], ar_Qsim[0:1], 'w:'); tab_leg.append(('Diff_cumul = '+str(Diff_cumul)[0:5]))
+        Abs_cumul = ut.Abs_cumul(ar_Qsim, ar_Qobs)   ; lines += ax.plot(ar_date[0:1], ar_Qsim[0:1], 'w:'); tab_leg.append(('Abs_cumul = '+str(Abs_cumul)[0:5]))
+        Err_cumul = ut.Err_cumul(ar_Qsim, ar_Qobs)   ; lines += ax.plot(ar_date[0:1], ar_Qsim[0:1], 'w:'); tab_leg.append(('Err_cumul = '+str(Err_cumul)[0:5]))
+
+        # added to include all in the label
 
     ax.set_xlim(ar_date[0], ar_date[-1])
     ytitle=r'$Q \  (m^3/s)$'
@@ -402,6 +411,9 @@ def plot_sim_observed(simulation_folder,  file_Qobs, outlet_ID):
     ax2.legend(lines, tab_leg, loc='upper right', fancybox=True)
     leg = ax2.get_legend()
     leg.get_frame().set_alpha(0.75)
+
+    for label in leg.get_texts():
+        label.set_fontsize('8')
 
     # rotate and align the tick labels so they look better,
     # unfortunately autofmt_xdate doesn't work with twinx due to a bug
@@ -427,12 +439,12 @@ def plot_sim_observed(simulation_folder,  file_Qobs, outlet_ID):
     fig.savefig(image_out)
     #plt.show()
 
-    RMSE= ut.RMSE(ar_Qsim,ar_Qobs)
-    RMSE_norm = ut.RMSE_norm(ar_Qsim,ar_Qobs)
-    Bias_cumul= ut.Bias_cumul(ar_Qsim,ar_Qobs)
-    Diff_cumul= ut.Diff_cumul(ar_Qsim,ar_Qobs)
-    Abs_cumul = ut.Abs_cumul(ar_Qsim,ar_Qobs)
-    Err_cumul = ut.Err_cumul(ar_Qsim,ar_Qobs)
+    # RMSE= ut.RMSE(ar_Qsim,ar_Qobs)
+    # RMSE_norm = ut.RMSE_norm(ar_Qsim,ar_Qobs)
+    # Bias_cumul= ut.Bias_cumul(ar_Qsim,ar_Qobs)
+    # Diff_cumul= ut.Diff_cumul(ar_Qsim,ar_Qobs)
+    # Abs_cumul = ut.Abs_cumul(ar_Qsim,ar_Qobs)
+    # Err_cumul = ut.Err_cumul(ar_Qsim,ar_Qobs)
 
     error_checking_param = [str(nash_value)[0:5], str(RMSE)[0:5],str(RMSE_norm)[0:5],str(Bias_cumul)[0:5],str(Diff_cumul)[0:5],str(Abs_cumul)[0:5],str(Err_cumul)[0:5]]
 
@@ -567,6 +579,62 @@ def download_daily_discharge(USGS_siteCode, beginDate, endDate,outFile, Q_max_mi
     np.savetxt(outFile,date_hr_min_n_Q, fmt='%i %i %i %i %i %f' , delimiter= "\t")
 
     return
+
+def download_and_resample_discharge_data(USGS_Gage, begin_date='2015-01-01', end_date='2015-12-31',out_fname='Q_cfs', resampling_time = '1D', resampling_method='mean'):
+    """
+    Downloads, and then resamples the discharge data from USGS using the url of the format:
+    http://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00060=on&format=rdb&site_no=10109000&period=&begin_date=2015-10-01&end_date=2015-10-31
+    INPUT:
+    USGS_Gage :     string, e.g. 10109000
+    begin_date=     string, e.g. '2015-01-01'
+    end_date=       string, e.g. '2015-12-31'
+    out_fname=      string, e.g. 'Q_cfs'
+    resampling_time=  string, e.g. '1D'
+    resampling_method=string, e.g.'mean'
+    """
+
+    import urllib2
+    import pandas as pd
+
+    urlString3 = 'http://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00060=on&format=rdb&site_no=%s&period=&begin_date=%s&end_date=%s'%(USGS_Gage, begin_date, end_date)
+
+    response = urllib2.urlopen(urlString3)  # instance of the file from the URL
+    html = response.read()                  # reads the texts into the variable html
+
+    with open('Q_raw.txt', 'w') as f:
+        f.write(html)
+
+    df = pd.read_csv('Q_raw.txt', delimiter='\t' , skiprows=26, names=['agency_cd', 'USGS_Station_no', 'datatime', 'timezone', 'Q_cfs','Quality'])
+
+    # convert datetime from string to datetime
+    df.iloc[:, 2] = pd.to_datetime(df.iloc[:, 2])
+
+    # create a different dataframe with just the values and datetime
+    df_datetime_val = df[['datatime', 'Q_cfs']]
+
+    # convert the values to series
+    values = []
+    dates = []
+
+    # add values to the list a
+    for v in df_datetime_val.iloc[:,1]:
+        values.append(float(v))
+
+    # add datatime to list b
+    for v in df_datetime_val.iloc[:, 0]:
+        dates.append(v)
+
+    # prepare a panda series
+    ts = pd.Series(values, index=dates)
+
+    # resample to daily or whatever
+    # ts_mean = ts.resample('1D', how='mean') #or
+    # ts_mean = ts.resample('1D').mean()
+    ts_mean = ts.resample(resampling_time, how=resampling_method)
+
+
+    # save
+    ts_mean.to_csv(out_fname)
 
 
 def calibrate_model(run_name, simulation_folder,  outlet_ID, runoff_file, calibration_parameters,initial_numerical_values= ""):
@@ -908,35 +976,39 @@ def run_pyTOPKAPI(ini_fname):
 
         i = 1
 
+        # following 4 lines are for NUMERICAL PARAMETER
         for pvs_t0 in  [ 30.,50., 70., 90., 95.]:  #[70., 80.,90.]:
             for vo_t0 in [100., 500.,1000.,2000.]:
                 for qc_t0 in [0. ]:
+                    for kc in [1]:
 
-                    for fac_L in  [0.1, 0.5,1, 1.5, 1.75, 2.]: #[0.5,1,2.5]:
-                        for fac_Ks in [0.1,0.5,1,1.5,2.]:
-                           for fac_n_o in  [1.]: #[0.3,0.5,1,1.5]:
-                                for fac_n_c in [1.]: #[0.3,0.5,1,1.5]:
-                                    for fac_th_s in [1]:
-                                        calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
-                                        numeric_param = [pvs_t0,vo_t0,qc_t0, 1 ]
+                        # following 5 lines are for CALIBRATION PARAMETER
+                        for fac_L in  [0.1, 1., 2., 4. ]: #[0.5,1,2.5]:
+                            for fac_Ks in [0.1, 1., 2., 4.]:
+                               for fac_n_o in  [1.]: #[0.3,0.5,1,1.5]:
+                                    for fac_n_c in [1.]: #[0.3,0.5,1,1.5]:
+                                        for fac_th_s in [1]:
 
-                                        run_name = "RUN-"+ str(i)
+                                            calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
+                                            numeric_param = [pvs_t0,vo_t0,qc_t0, kc ]
 
-                                        # get the error parameters (nash_value, RMSE, RMSE_norm, Bias_cumul, Diff_cumul, Abs_cumul, Err_cumul)
-                                        # and the simulated discharge for each timestep
-                                        # the model run using this function takes calibration parameter and numeric parameter as input
+                                            run_name = "RUN-"+ str(i)
 
-                                        error_checking_param, Q_sim = calibrate_model(run_name,simulation_folder, outlet_id, Q_observed_file, calib_param,numeric_param)
+                                            # get the error parameters (nash_value, RMSE, RMSE_norm, Bias_cumul, Diff_cumul, Abs_cumul, Err_cumul)
+                                            # and the simulated discharge for each timestep
+                                            # the model run using this function takes calibration parameter and numeric parameter as input
 
-                                        with open(simulation_folder+'/results/calibration/run_log.txt', "a+") as run_log:
-                                            run_log.write('\n'+run_name + '\t'
-                                                          + "|".join(str(item) for item in calib_param)+  '\t'
-                                                          +"|".join(str(item) for item in numeric_param)+  '\t'
-                                                          +"|".join(str(item) for item in error_checking_param)
-                                                          + '\tQ_sim: '
-                                                          + " ".join(str(item) for item in Q_sim))
+                                            error_checking_param, Q_sim = calibrate_model(run_name,simulation_folder, outlet_id, Q_observed_file, calib_param,numeric_param)
 
-                                        i = i +1
+                                            with open(simulation_folder+'/results/calibration/run_log.txt', "a+") as run_log:
+                                                run_log.write('\n'+run_name + '\t'
+                                                              + "|".join(str(item) for item in calib_param)+  '\t'
+                                                              +"|".join(str(item) for item in numeric_param)+  '\t'
+                                                              +"|".join(str(item) for item in error_checking_param)
+                                                              + '\tQ_sim: '
+                                                              + " ".join(str(item) for item in Q_sim))
+
+                                            i = i +1
 
 
 
@@ -952,11 +1024,16 @@ if __name__ == '__main__':
     #     #     print 'Unsuccessful for ', wshed_to_simulate
 
     # download_daily_discharge('10105900', '2015-01-01', '2015-12-30', '../../../Multiple Watersheds in BRB/LittleBearRiver/Runoff_2015.dat', Q_max_min_mean="mean")
+    # download_and_resample_discharge_data('10109000', begin_date='2015-01-01', end_date='2015-12-31')
 
-    # create_rain_ET_file(r'C:\Users\Prasanna\OneDrive\Public\Multiple Watersheds in BRB\LoganRiver',6169,
-    #                     r'C:\Users\Prasanna\OneDrive\Public\Multiple Watersheds in BRB\LoganRiver\Rainfall.txt')
+    # outlet_ID = get_outletID_noOfCell('../../../Multiple Watersheds in BRB/LoganRiver/cell_param.dat')
+    plot_sim_observed('../../../Multiple Watersheds in BRB/LoganRiver/', '../../../Multiple Watersheds in BRB/LoganRiver/Runoff.dat', 5354)
 
-    run_pyTOPKAPI('../../../Multiple Watersheds in BRB/LoganRiver/LoganRiver.ini' )
+
+    # create_rain_ET_file('../../../Multiple Watersheds in BRB/LoganRiver/',outlet_ID,
+    #                     '../../../Multiple Watersheds in BRB/LoganRiver/Rainfall.txt')
+    #
+    # run_pyTOPKAPI('../../../Multiple Watersheds in BRB/LoganRiver/LoganRiver.ini' )
 
 
 
