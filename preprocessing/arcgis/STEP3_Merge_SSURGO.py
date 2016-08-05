@@ -3,8 +3,12 @@ import numpy as np
 import os
 
 '''
-For the A/B etc. designations in soil group, think about replacing it to a number, may be. or may be AB, AD rather
+
+FUTURE IMPROVEMENTS:
+1) For the A/B etc. designations in soil group, think about replacing it to a number, may be. or may be AB, AD rather
 than replacing them with a single soil group
+
+2) The list 'valuesToAvg' and 'list_fname_ColNo_Headers' could be read from a file
 '''
 
 try:
@@ -16,44 +20,86 @@ except Exception, e:
 
 if path2_ssurgo_or_statsgo == "":
     # Input a folder that has all the folders of names similar to  UT012, Ut027 etc.
-    path2_ssurgo_or_statsgo = r"E:\Research Data\00 Red Butte Creek\STATSGO_Folders"
+    path2_ssurgo_or_statsgo = r"C:\Users\Prasanna\OneDrive\Public\Multiple Watersheds in BRB\SSURGO_folders"
     lookupTable = os.path.join(os.getcwd(), "GREENAMPT_LOOKUPTABLE.csv")    #have not tested though
     # lookupTable = r"C:\Users\Prasanna\Google Drive\RESEARCH\AutoPTPK2\GREENAMPT_LOOKUPTABLE.csv"
-    
+
+# consider_chorizon_AB = False if all layers need to be considered for weighted averaging
+consider_chorizon_AB = True
+
+# a small function, to calculate soil depth for each Map Unit
+def get_SD(path2tabular):
+    merged2 = pd.read_csv(path2tabular + '\\' + 'OverallMergedWithTexture_2.csv')
+
+    # VxD = merged['HorizonDepth2'] * merged[valueName];
+    # merged.loc[:, valueName + "xD_sum"] = VxD
+
+    chorizonCalc = merged2.groupby('COKEY').agg({'HorizonDepth2': np.sum,
+                                                 'ComponentPercent': np.max,
+                                                 'COKEY': np.max,
+                                                 'MUKEY': np.max})
+
+    chorizonCalc = chorizonCalc.rename(columns={
+        'HorizonDepth2': 'SD_sum_component'})  # because grouping by cokey, the column name doesnt match its data
+
+    # percentage weightage
+    SD_Perc_X = chorizonCalc['ComponentPercent'].astype('float') / 100. * chorizonCalc['SD_sum_component']
+    chorizonCalc.loc[:, 'SD_comp'] = SD_Perc_X
+
+    # now Group it by MUKEY, and done!
+    componentPercentageCalc = chorizonCalc.groupby('MUKEY').agg({'MUKEY': np.max, 'SD_comp': np.sum})
+    componentPercentageCalc = componentPercentageCalc.rename(columns={'SD_comp': 'SD'})
+
+    componentPercentageCalc.to_csv(os.path.join(path2tabular, "MUKEY-SD.csv"), index=False)
+
+
+    # To get Soil Depth for each MU key, sum SD by first grouping/aggregating data in COKEY
+    # And then apply weighted average based on Component %
+
 def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
     """
     :param path2_ssurgo_or_statsgo: The path to a folder containing the collection of SSURGO (or Statsgo) folders
     :param path2lookupTable: The greenampt csv lookup table that with soil properties for each soil texture classes
     :return: a csv file in each ssurgo folders, that has soil properties calculated for each map units
     """
+
+    # # # STEP-I: Read file, list of folders # # #
+
+    # Read the lookup table that maps each soil type to different soil properties. Like Rawls et al (1982)
     lookupTable = pd.read_csv(path2lookupTable , sep=',', skiprows = 0)
 
-    # create a list of folders only
+    # In the SSURGO/STATSGO folder path given, there will be one or more folders containing SSURGO or STATSGO.
+    # Create a list of those folders
     folderList = []
     [folderList.append(folders) for folders in os.listdir(path2_ssurgo_or_statsgo)
         if os.path.isdir(os.path.join(path2_ssurgo_or_statsgo, folders))]
 
+    # # # STEP-II: For each SSURGO/STATSGO folder, create rasters  # # #
+
     for folder in folderList:
+
+        # # # STEP-III: Initialize # # #
         path2ssurgo= os.path.join(path2_ssurgo_or_statsgo , folder)
         path2tabular = os.path.join(path2ssurgo, "tabular")
         path2Spatial= os.path.join(path2ssurgo, "spatial")
 
-        # Make changes here! The values that we need to average
-        valuesToAvg = ['ksat_r','Ks','dbthirdbar_r','dbfifteenbar_r', 'ResidualWaterContent', 'Porosity',
-                        'EffectivePorosity', 'BubblingPressure_Geometric', 'PoreSizeDistribution_geometric']
+        # The values that we need to average, MAKE CHANGES HERE
+        valuesToAvg = ['ksat_r','dbthirdbar_r','dbfifteenbar_r','AWC','Ks', 'ResidualWaterContent', 'Porosity',
+                        'EffectivePorosity', 'BubblingPressure_Geometric', 'PoreSizeDistribution_geometric', 'SD']
 
-        # fileNameColNoListHeaders [ [filename, [column numbers for fields to pull up], [col headers to be assigned]], ]
+        # list_fname_ColNo_Headers [ [filename, [column numbers for fields to pull up], [col headers to be assigned]], ]
         # the number start from 0, so 1 is actually the second column/field
-        fileNameColNoListHeaders = [ ["comp",[1,5,107,108],["ComponentPercent","MajorComponent", "MUKEY","COKEY"]],
-                                     ["muaggatt",[10,17,39],["AvaWaterCon","HydroGrp","MUKEY"]],
-                                     ["chorizon",[6,9,12,81,72,75,169,170],["TopDepth","BottomDepth", "HorizonDepth","ksat_r","dbthirdbar_r","dbfifteenbar_r","COKEY","CHKEY"]],
+        list_fname_ColNo_Headers = [ ["comp",[1,5,107,108],["ComponentPercent","MajorComponent", "MUKEY","COKEY"]],
+                                     ["muaggatt",[10,17,39],["AWC","HydroGrp","MUKEY"]],
+                                     ["chorizon",[0,6,9,12,82,72,75,91,94,169,170],["hzname","TopDepth","BottomDepth", "HorizonDepth","ksat_r","dbthirdbar_r","dbfifteenbar_r","wthirdbar_r","wfifteenbar_r","COKEY","CHKEY"]],
                                      ["chtextur",[0,2,3],["textureName","CHtxtgrpKEY","CHTXTKEY"]],
                                      ["chtexgrp",[4,5],["CHKEY","CHtxtgrpKEY"]]
                                      ]
 
+        # # # STEP-IV: Reads necessary SSURGO tables from textfiles, and save as csv with the headers # # #
         def STEP1_rawToRefined( fileName_ColNoList_Headers, path=path2tabular):
             """
-            :param fileName_ColNoList_Headers: the list (filename, col numbers, names to the col)
+            :param fileName_ColNoList_Headers: the list (filename, col numbers, names to the col) = list_fname_ColNo_Headers
             :param path: path2tabular
             :return: file in the memory, as panda dataframe
             """
@@ -70,7 +116,7 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
                 reqdData.to_csv(os.path.join(path ,  txtFilename + ".csv"), index=False)
             return reqdData
 
-        # Merges the CSV files read earlier
+        # # # STEP-V: Merges the muaggatt-component & chtexgrp-chtextur-chorizon. (without LUT values) # # #
         def STEP2_mergeCSV(path=path2tabular):
             muaggatt  = pd.read_csv(path+"/muaggatt.csv") ; print "Total values in muaggatt.csv:", len(muaggatt.index)
             component = pd.read_csv(path+"/comp.csv")    ; print "Total values in comp.csv:", len(component.index)
@@ -84,17 +130,22 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
             chTxt_chTxtGrp =  pd.merge(chtextur , chtexgrp, on='CHtxtgrpKEY')
             merged = pd.merge(chTxt_chTxtGrp , chorizon_Component_Muaggatt, on='CHKEY')
 
-
             # print chorizonWithComponent
             merged.to_csv(path + "/MERGED.csv", index=False)
             return merged
 
-        # __main__
-        try:
-            STEP1_rawToRefined(fileNameColNoListHeaders) ; print "Headers applied to raw txts"
-            mergdf = STEP2_mergeCSV() ; print "Merging completed"
 
-            mergeWithLookUp = pd.merge(mergdf, lookupTable, on= 'textureName') #>result: OverallMergedWithTexture.csv
+
+        # __main__
+
+        # # # STEP-VI: Merge the 'merged.csv' to LUT on textureName # # #
+        try:
+            STEP1_rawToRefined(list_fname_ColNo_Headers);
+            print "Headers applied to raw txts"
+            mergdf = STEP2_mergeCSV();
+            print "Merging completed"
+
+            mergeWithLookUp = pd.merge(mergdf, lookupTable, on='textureName')  # >result: OverallMergedWithTexture.csv
             mergeWithLookUp.to_csv(os.path.join(path2tabular, "OverallMergedWithTexture.csv"), index=False)
 
             print "Merging with texture lookup table completed"
@@ -102,13 +153,22 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
         except Exception, e:
             print e
 
-        # Calculations part
+        # # # STEP-VII: Weighted average Calculations # # #
         try:
             # STEP4 Take i)Height Weighted Average ii)Component % weighted average --------> result MUKEY-Vs-Values.csv
             merged = pd.read_csv(os.path.join(path2tabular, "OverallMergedWithTexture.csv"))
 
-            # Caclulation of weighted average
+            # Calculation of weighted average
             HorizonDepth2 = merged['BottomDepth'] - merged['TopDepth'] ; merged.loc[:,'HorizonDepth2']= HorizonDepth2
+
+            # CORRECTIONS INCLUDED IN MERGED2: 1)Deleted duplicates Chorizon layers, 2) Layer A & B only considered
+            criterion = merged['hzname'].map(lambda x: x.startswith('A') or x.startswith('B'))
+            merged2 = merged[criterion]
+            merged2 = merged2.drop_duplicates('CHKEY')
+            merged2.to_csv(os.path.join(path2tabular, "OverallMergedWithTexture_2.csv"), index=False) # saving for future
+
+            if consider_chorizon_AB:
+                merged = merged2
 
             # the values whose weighted average we want, needs to be given in the list below
             # -------> MUKEY Vs Value (just one) MUKEY-Value.csv
@@ -135,8 +195,12 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
             # now, function to use the 'valuesToAvg' list above, and merge them against MUKEY
             mukeyValues = componentPercentageCalc.MUKEY
 
+            # get the Soil Depth
+            get_SD(path2tabular)
+
         except Exception, e:
             print e
+
 
 
         try:
@@ -191,8 +255,17 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
         except Exception,e :
             print "Merging the Hydrologic Soil Group failed with the error %s"%e
 
+            # Trial to find Soil depth for layers A and B
+
+
+
+
+
+
+
 if __name__ == "__main__":
     step3_merge_ssurgo( path2_ssurgo_or_statsgo, lookupTable)
+
 
 
 
