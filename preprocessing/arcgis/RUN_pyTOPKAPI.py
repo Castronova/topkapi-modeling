@@ -15,7 +15,7 @@ def create_config_files_create_file(simulation_folder, tiff_folder,pVs_t0=90., V
     configWrite.add_section('raster_files')
     configWrite.set('raster_files', 'dem_fname', tiff_folder+"/DEM_Prj_fc.tif")
     configWrite.set('raster_files', 'mask_fname', tiff_folder+  "/mask_r.tif" )
-    configWrite.set('raster_files', 'soil_depth_fname', tiff_folder + "/SD.tif")
+    configWrite.set('raster_files', 'soil_depth_fname', tiff_folder + "/SD-sc.tif")
     configWrite.set('raster_files', 'conductivity_fname', tiff_folder + "/ksat-tc.tif")
     configWrite.set('raster_files', 'hillslope_fname',tiff_folder+ "/slope_c.tif")
     configWrite.set('raster_files', 'sat_moisture_content_fname', tiff_folder+ '/por-tc.tif')
@@ -307,7 +307,7 @@ def check_hdf5(hdf5_filename):
             except:
                 pass
 
-def plot_sim_observed(simulation_folder,  file_Qobs, outlet_ID):
+def plot_sim_observed(hydrograph_fname, simulation_folder,  file_Qobs, outlet_ID):
     '''
     Parameters
     ----------
@@ -339,7 +339,11 @@ def plot_sim_observed(simulation_folder,  file_Qobs, outlet_ID):
     color_P='b'
     transparency_P=0.5#(0 for invisible)
 
-    image_out = simulation_folder+'/results/calibration/Result_'+ str(datetime.now()).replace(':','-')[:-7] + '.png'
+    image_out = simulation_folder +'/results/calibration/'+ hydrograph_fname+".png"
+    if  hydrograph_fname == '':
+        image_out = simulation_folder+'/results/calibration/Result_'+ str(datetime.now()).replace(':','-')[:-7] + '.png'
+
+
     #create path_out if it does'nt exist
     ut.check_file_exist(image_out)
 
@@ -399,7 +403,7 @@ def plot_sim_observed(simulation_folder,  file_Qobs, outlet_ID):
     ax.set_xlim(ar_date[0], ar_date[-1])
     ytitle=r'$Q \  (m^3/s)$'
     ax.set_ylabel(ytitle, fontsize=18)
-    ax.set_title(group_name)
+    ax.set_title("Calib:Param_"+hydrograph_fname)
 
     ax2 = ax.twinx()
 
@@ -677,7 +681,7 @@ def calibrate_model(run_name, simulation_folder,  outlet_ID, runoff_file, calibr
     # run the program now
     pytopkapi.run(simulation_folder+'/TOPKAPI.ini')
 
-    error_checking_param ,ar_Q_sim = plot_sim_observed(simulation_folder, runoff_file, outlet_ID)
+    error_checking_param ,ar_Q_sim = plot_sim_observed(run_name, simulation_folder, runoff_file, outlet_ID)
 
     return error_checking_param, ar_Q_sim
 
@@ -743,7 +747,7 @@ def preprocess_input_tiffs(ini_fname=''):
 
 
     # list of empty directories to be made
-    folders_to_create = [ 'SSURGO_rasters', 'TIFFS']
+    folders_to_create = [ 'DEM_processes','SSURGO_rasters', 'TIFFS']
 
     # Out Directories
     raw_files_outDir = os.path.join(projDir, "Raw_files.gdb")
@@ -803,7 +807,7 @@ def preprocess_input_tiffs(ini_fname=''):
     for outRaster in ["mask_r", "DEM_Prj_fc",  "n_Overland", "n_Channel", "fdr_cr" , "slope_c", "SD", "str_c", "str_cr9999", "str_cr255"]:
         arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(raw_files_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
 
-    for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "por-tc.tif", "rsm-tc.tif" ]:
+    for outRaster in ["bbl-tc.tif", "efpo-tc.tif", "ksat-tc.tif",  "psd-tc.tif", "por-tc.tif", "rsm-tc.tif", "SD-sc.tif", "AWC-sc.tif" ]:
         arcpy.RasterToOtherFormat_conversion(Input_Rasters="'%s'"%(os.path.join(ssurgo_outDir, outRaster)), Output_Workspace=tiffs_outDir, Raster_Format="TIFF")
 
     # delete unnecessary files
@@ -962,8 +966,14 @@ def run_pyTOPKAPI(ini_fname):
         if not os.path.exists(simulation_folder + '/results/calibration'):
             os.mkdir(simulation_folder + '/results/calibration')
 
-        # create a blank file
-        open(simulation_folder + "/results/calibration/run_log.txt", 'a').close()
+        # # create a blank file
+        # open(simulation_folder + "/results/calibration/run_log.txt", 'a').close()
+
+        # add headers to it, sort of metadata
+        with open(simulation_folder + "/results/calibration/run_log.txt", 'a') as f:
+            f.write('Calib param: fac_L|fac_Ks|fac_n_o|fac_n_c|fac_th_s '
+                    '\t Numeric Param:  pvs_t0|vo_t0|qc_t0|kc '
+                    '\t Errors: nash_value|RMSE|RMSE_norm|Bias_cumul|Diff_cumul|Abs_cumul|Err_cumul\n')
 
         # get the outlet_ID
         config = SafeConfigParser()
@@ -977,22 +987,22 @@ def run_pyTOPKAPI(ini_fname):
         i = 1
 
         # following 4 lines are for NUMERICAL PARAMETER
-        for pvs_t0 in  [ 30.,50., 70., 90., 95.]:  #[70., 80.,90.]:
-            for vo_t0 in [100., 500.,1000.,2000.]:
+        for pvs_t0 in  [ 30., 95.]:
+            for vo_t0 in [100.,2000.]:
                 for qc_t0 in [0. ]:
                     for kc in [1]:
 
                         # following 5 lines are for CALIBRATION PARAMETER
-                        for fac_L in  [0.1, 1., 2., 4. ]: #[0.5,1,2.5]:
-                            for fac_Ks in [0.1, 1., 2., 4.]:
-                               for fac_n_o in  [1.]: #[0.3,0.5,1,1.5]:
-                                    for fac_n_c in [1.]: #[0.3,0.5,1,1.5]:
+                        for fac_L in  [0.1, 1., 4. ]:
+                            for fac_Ks in [1., 4.]:
+                               for fac_n_o in  [1.]:
+                                    for fac_n_c in [1.]:
                                         for fac_th_s in [1]:
 
                                             calib_param = [fac_L,fac_Ks,fac_n_o,fac_n_c,fac_th_s ]
                                             numeric_param = [pvs_t0,vo_t0,qc_t0, kc ]
 
-                                            run_name = "RUN-"+ str(i)
+                                            run_name = str(i)+"_" + "-".join(str(item) for item in calib_param) + "-".join(str(item) for item in numeric_param)
 
                                             # get the error parameters (nash_value, RMSE, RMSE_norm, Bias_cumul, Diff_cumul, Abs_cumul, Err_cumul)
                                             # and the simulated discharge for each timestep
@@ -1027,13 +1037,13 @@ if __name__ == '__main__':
     # download_and_resample_discharge_data('10109000', begin_date='2015-01-01', end_date='2015-12-31')
 
     # outlet_ID = get_outletID_noOfCell('../../../Multiple Watersheds in BRB/LoganRiver/cell_param.dat')
-    plot_sim_observed('../../../Multiple Watersheds in BRB/LoganRiver/', '../../../Multiple Watersheds in BRB/LoganRiver/Runoff.dat', 5354)
+    # plot_sim_observed('../../../Multiple Watersheds in BRB/LoganRiver/', '../../../Multiple Watersheds in BRB/LoganRiver/Runoff.dat', 5354)
 
 
     # create_rain_ET_file('../../../Multiple Watersheds in BRB/LoganRiver/',outlet_ID,
     #                     '../../../Multiple Watersheds in BRB/LoganRiver/Rainfall.txt')
     #
-    # run_pyTOPKAPI('../../../Multiple Watersheds in BRB/LoganRiver/LoganRiver.ini' )
+    run_pyTOPKAPI('../../../Multiple Watersheds in BRB/BlackSmithFork/BlackSmithFork.ini' )
 
 
 

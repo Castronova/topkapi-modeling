@@ -14,47 +14,21 @@ than replacing them with a single soil group
 try:
     import arcpy
     path2_ssurgo_or_statsgo = arcpy.GetParameterAsText(0)
-    lookupTable = arcpy.GetParameterAsText(1)             #this should be optional
+    lookupTable = arcpy.GetParameterAsText(1)             # this should be optional
 except Exception, e:
     print e
 
+# consider_chorizon_AB = False if all layers need to be considered for weighted averaging
+consider_chorizon_AB = True
+# calculate SD for layers A, B and H
+calculate_sd = True
+
 if path2_ssurgo_or_statsgo == "":
     # Input a folder that has all the folders of names similar to  UT012, Ut027 etc.
-    path2_ssurgo_or_statsgo = r"C:\Users\Prasanna\OneDrive\Public\Multiple Watersheds in BRB\SSURGO_folders"
+    path2_ssurgo_or_statsgo = r"C:\Users\Prasanna\OneDrive\Public\Multiple Watersheds in BRB\STATSGO_folders"
     lookupTable = os.path.join(os.getcwd(), "GREENAMPT_LOOKUPTABLE.csv")    #have not tested though
     # lookupTable = r"C:\Users\Prasanna\Google Drive\RESEARCH\AutoPTPK2\GREENAMPT_LOOKUPTABLE.csv"
 
-# consider_chorizon_AB = False if all layers need to be considered for weighted averaging
-consider_chorizon_AB = True
-
-# a small function, to calculate soil depth for each Map Unit
-def get_SD(path2tabular):
-    merged2 = pd.read_csv(path2tabular + '\\' + 'OverallMergedWithTexture_2.csv')
-
-    # VxD = merged['HorizonDepth2'] * merged[valueName];
-    # merged.loc[:, valueName + "xD_sum"] = VxD
-
-    chorizonCalc = merged2.groupby('COKEY').agg({'HorizonDepth2': np.sum,
-                                                 'ComponentPercent': np.max,
-                                                 'COKEY': np.max,
-                                                 'MUKEY': np.max})
-
-    chorizonCalc = chorizonCalc.rename(columns={
-        'HorizonDepth2': 'SD_sum_component'})  # because grouping by cokey, the column name doesnt match its data
-
-    # percentage weightage
-    SD_Perc_X = chorizonCalc['ComponentPercent'].astype('float') / 100. * chorizonCalc['SD_sum_component']
-    chorizonCalc.loc[:, 'SD_comp'] = SD_Perc_X
-
-    # now Group it by MUKEY, and done!
-    componentPercentageCalc = chorizonCalc.groupby('MUKEY').agg({'MUKEY': np.max, 'SD_comp': np.sum})
-    componentPercentageCalc = componentPercentageCalc.rename(columns={'SD_comp': 'SD'})
-
-    componentPercentageCalc.to_csv(os.path.join(path2tabular, "MUKEY-SD.csv"), index=False)
-
-
-    # To get Soil Depth for each MU key, sum SD by first grouping/aggregating data in COKEY
-    # And then apply weighted average based on Component %
 
 def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
     """
@@ -62,6 +36,38 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
     :param path2lookupTable: The greenampt csv lookup table that with soil properties for each soil texture classes
     :return: a csv file in each ssurgo folders, that has soil properties calculated for each map units
     """
+
+    def get_SD(path2_OverallMergedWithTexture_2):
+        # a small function, to calculate soil depth for each Map Unit
+        merged2 = pd.read_csv(path2_OverallMergedWithTexture_2)
+
+        # VxD = merged['HorizonDepth2'] * merged[valueName];
+        # merged.loc[:, valueName + "xD_sum"] = VxD
+
+        chorizonCalc = merged2.groupby('COKEY').agg({'HorizonDepth2': np.sum,
+                                                     'ComponentPercent': np.max,
+                                                     'COKEY': np.max,
+                                                     'MUKEY': np.max})
+
+        chorizonCalc = chorizonCalc.rename(columns={
+            'HorizonDepth2': 'SD_sum_component'})  # because grouping by cokey, the column name doesnt match its data
+
+        # percentage weightage
+        SD_Perc_X = chorizonCalc['ComponentPercent'].astype('float') / 100. * chorizonCalc['SD_sum_component']
+        chorizonCalc.loc[:, 'SD_comp'] = SD_Perc_X
+
+        # now Group it by MUKEY, and done!
+        componentPercentageCalc = chorizonCalc.groupby('MUKEY').agg({'MUKEY': np.max, 'SD_comp': np.sum})
+        componentPercentageCalc = componentPercentageCalc.rename(columns={'SD_comp': 'SD'})
+
+        # convert cm to m
+        componentPercentageCalc['SD'] = componentPercentageCalc['SD'] * .01
+
+        componentPercentageCalc.to_csv(os.path.join(path2tabular, "MUKEY-SD.csv"), index=False)
+
+
+        # To get Soil Depth for each MU key, sum SD by first grouping/aggregating data in COKEY
+        # And then apply weighted average based on Component %
 
     # # # STEP-I: Read file, list of folders # # #
 
@@ -85,7 +91,7 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
 
         # The values that we need to average, MAKE CHANGES HERE
         valuesToAvg = ['ksat_r','dbthirdbar_r','dbfifteenbar_r','AWC','Ks', 'ResidualWaterContent', 'Porosity',
-                        'EffectivePorosity', 'BubblingPressure_Geometric', 'PoreSizeDistribution_geometric', 'SD']
+                        'EffectivePorosity', 'BubblingPressure_Geometric', 'PoreSizeDistribution_geometric']
 
         # list_fname_ColNo_Headers [ [filename, [column numbers for fields to pull up], [col headers to be assigned]], ]
         # the number start from 0, so 1 is actually the second column/field
@@ -161,14 +167,17 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
             # Calculation of weighted average
             HorizonDepth2 = merged['BottomDepth'] - merged['TopDepth'] ; merged.loc[:,'HorizonDepth2']= HorizonDepth2
 
-            # CORRECTIONS INCLUDED IN MERGED2: 1)Deleted duplicates Chorizon layers, 2) Layer A & B only considered
-            criterion = merged['hzname'].map(lambda x: x.startswith('A') or x.startswith('B'))
+            # CORRECTIONS INCLUDED IN MERGED2: 1)Deleted duplicates Chorizon layers, 2) Layer A & B only considered. H added for statsgo, since they dont do horizon naming
+            criterion = merged['hzname'].map(lambda x: x.startswith('A') or x.startswith('B') or x.startswith('H'))
             merged2 = merged[criterion]
             merged2 = merged2.drop_duplicates('CHKEY')
             merged2.to_csv(os.path.join(path2tabular, "OverallMergedWithTexture_2.csv"), index=False) # saving for future
 
             if consider_chorizon_AB:
                 merged = merged2
+
+            # Create the MUKEY VS Soil Depth file
+            get_SD(os.path.join(path2tabular, "OverallMergedWithTexture_2.csv"))
 
             # the values whose weighted average we want, needs to be given in the list below
             # -------> MUKEY Vs Value (just one) MUKEY-Value.csv
@@ -179,7 +188,7 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
                                                             'ComponentPercent':np.max,
                                                             'COKEY':np.max,
                                                             'MUKEY':np.max })
-                chorizonCalc=chorizonCalc.rename(columns = {'HorizonDepth2':'HorizonDepth2_sum'}) # because grouping by cokey, the column name doesnt match its data
+                chorizonCalc = chorizonCalc.rename(columns = {'HorizonDepth2':'HorizonDepth2_sum'}) # because grouping by cokey, the column name doesnt match its data
 
                 VxD_by_sum = chorizonCalc[valueName+"xD_sum"].astype('float').div(chorizonCalc['HorizonDepth2_sum'].astype('float'))
                 chorizonCalc.loc[:,valueName+"_avgH"]= VxD_by_sum
@@ -195,8 +204,7 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
             # now, function to use the 'valuesToAvg' list above, and merge them against MUKEY
             mukeyValues = componentPercentageCalc.MUKEY
 
-            # get the Soil Depth
-            get_SD(path2tabular)
+
 
         except Exception, e:
             print e
@@ -212,13 +220,18 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
                 print path2tabular+"\\MUKEY-"+ valueName  +".csv"
                 lastValueFile = pd.merge(lastValueFile, fl, on="MUKEY")
 
+            # add soil depth in here
+            if calculate_sd:
+                sd_file = pd.read_csv(path2tabular+"\\MUKEY-SD.csv")
+                lastValueFile = pd.merge(lastValueFile,sd_file, on="MUKEY")
+
             # Print mukeyValuesAllMerged
             lastValueFile.to_csv(path2ssurgo+"\\MUKEY-Vs-Values.csv", index=False)
             print 'All values table written down in the ssurgo folder'
 
             # Create a schema.ini so that arcGIS can understand the MUKEY field
             schema = open(path2ssurgo+"\\schema.ini", "w")
-            schema.write("[MUKEY-Vs-Values.csv]"+ "\n" + "Col2=MUKEY Text")  #may not always be column 1 though
+            schema.write("[MUKEY-Vs-Values.csv]"+ "\n" + "Col2=MUKEY Text")  # may not always be column 1 though
             schema.close()
 
         except Exception, e:
@@ -254,11 +267,6 @@ def step3_merge_ssurgo(path2_ssurgo_or_statsgo ,path2lookupTable=lookupTable ):
 
         except Exception,e :
             print "Merging the Hydrologic Soil Group failed with the error %s"%e
-
-            # Trial to find Soil depth for layers A and B
-
-
-
 
 
 
